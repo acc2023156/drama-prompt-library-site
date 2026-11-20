@@ -380,8 +380,8 @@ a.pill{text-decoration:none}
 .wc-x{position:absolute;top:14px;right:14px;width:32px;height:32px;border-radius:9px;display:grid;place-items:center;color:var(--text-3)}
 .wc-x:hover{background:#26262a;color:#fff}
 .wc-x svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
-.wc-title{padding-right:36px;display:flex;align-items:center;font-size:26px;font-weight:800;color:#fff}
-.wc-title input{field-sizing:content;flex:0 1 auto;min-width:1em;max-width:100%;background:transparent;border:0;outline:0;color:#fff;font:inherit;padding:2px 4px}
+.wc-title{padding:0 36px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:26px;font-weight:800;color:#fff}
+.wc-title input{field-sizing:content;flex:0 1 auto;min-width:1em;max-width:100%;background:transparent;border:0;outline:0;color:#fff;font:inherit;text-align:center;padding:2px 4px}
 .wc-title input::placeholder{color:var(--text-3)}
 .wc-story{display:block;width:100%;margin-top:12px;border:1px solid var(--line-2);border-radius:14px;background:#0f0f11;color:#fff;font:16px/1.7 var(--font);padding:12px 14px;resize:vertical;outline:0}
 .wc-story:focus{border-color:rgba(139,69,255,.6)}
@@ -422,6 +422,7 @@ a.pill{text-decoration:none}
 .wc-mic.on{background:var(--brand);animation:micpulse 1.2s ease-in-out infinite}
 @keyframes micpulse{50%{box-shadow:0 0 0 8px rgba(139,69,255,.25)}}
 .vt{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 14px}
+.vt-act{position:relative}.export-wrap{position:relative}.export-menu{position:absolute;top:46px;right:0;z-index:10;display:none;width:220px;padding:8px;border-radius:14px;background:#29292d;border:1px solid var(--line-2);box-shadow:0 18px 50px rgba(0,0,0,.5)}.export-menu.open{display:grid}.export-menu button{display:flex;align-items:center;gap:10px;height:46px;padding:0 12px;border-radius:9px;text-align:left}.export-menu button:hover{background:rgba(255,255,255,.07)}.export-menu svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
 .vt-tabs{display:flex;gap:4px;padding:4px;border-radius:14px;background:#141416;border:1px solid var(--line);overflow-x:auto;max-width:100%}
 .vt-tabs button{height:38px;padding:0 16px;border-radius:10px;color:var(--text-2);font-size:14px;white-space:nowrap}
 .vt-tabs button.on{background:var(--brand);color:#fff;font-weight:600}
@@ -754,7 +755,8 @@ a.pt-banner:hover{transform:translateY(-2px)}
 /* 结果页 */
 .done-hero{position:relative;text-align:center;margin:40px 0 24px;overflow:hidden;padding:20px 0}
 .done-hero .badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border-radius:999px;background:rgba(61,220,151,.14);color:var(--green);font-weight:700;font-size:13px}
-.done-hero h1{margin:14px 0 8px;font-family:"Noto Sans SC",var(--font);font-weight:900;font-size:clamp(26px,4vw,40px)}
+.done-hero h1{margin:14px 0 8px;text-align:center;font-family:"Noto Sans SC",var(--font);font-weight:900;font-size:clamp(26px,4vw,40px)}
+.done-hero .stats{justify-content:center;text-align:center}
 .stats{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}
 .stats span{padding:8px 16px;border-radius:14px;background:#18181b;border:1px solid var(--line);font-size:13px;color:var(--text-2)}
 .stats b{color:#fff;font-size:18px;margin-right:4px}
@@ -999,6 +1001,14 @@ async function copyText(text, btn){
   toast('已复制到剪贴板');
   if(btn){btn.classList.add('done');const h=btn.innerHTML;btn.innerHTML=ico('check')+'已复制';setTimeout(()=>{btn.classList.remove('done');btn.innerHTML=h},1300)}
 }
+function zipCrc(bytes){let c=-1;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^-1)>>>0}
+function makeZip(files){
+  const enc=new TextEncoder(), parts=[], central=[]; let offset=0;
+  const u16=n=>new Uint8Array([n&255,n>>>8&255]), u32=n=>new Uint8Array([n&255,n>>>8&255,n>>>16&255,n>>>24&255]);
+  for(const f of files){const name=enc.encode(f.name),data=enc.encode(f.text),crc=zipCrc(data),head=new Uint8Array([...u32(0x04034b50),...u16(20),...u16(0x800),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...name]);parts.push(head,data);central.push(new Uint8Array([...u32(0x02014b50),...u16(20),...u16(20),...u16(0x800),...u16(0),...u16(0),...u16(0),...u32(crc),...u32(data.length),...u32(data.length),...u16(name.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(offset),...name]));offset+=head.length+data.length}
+  const csize=central.reduce((n,x)=>n+x.length,0),end=new Uint8Array([...u32(0x06054b50),...u16(0),...u16(0),...u16(files.length),...u16(files.length),...u32(csize),...u32(offset),...u16(0)]);return new Blob([...parts,...central,end],{type:'application/zip'});
+}
+function saveBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
 function firstCode(md){const m=md.match(/```[^\n]*\n([\s\S]*?)\n```/);return m?m[1]:''}
 function usage(md){const m=md.match(/\*\*用法\*\*[:：]\s*([^\n]+)/);return m?m[1].replace(/[*`]/g,''):''}
 function licClass(l){return l.startsWith('内部')?'int':l.includes('仅参考')?'ref':''}
@@ -2312,7 +2322,7 @@ function viewVibeScript(id, tab){
     </section>
     <div class="vt">
       <div class="vt-tabs" id="vtTabs">${TABS.map(([k,l])=>`<button data-t="${k}">${l}</button>`).join('')}</div>
-      <div class="vt-act"><button class="btn-o" id="vtAI">${ico('sparkle')}<span class="lbl">AI 审稿</span></button></div>
+      <div class="vt-act"><div class="export-wrap"><button class="btn-o" id="vtExport">${ico('dl')}<span class="lbl">导出</span></button><div class="export-menu" id="exportMenu"><button id="exportZip">${ico('dl')}导出到本地（ZIP）</button><button id="exportXtasy">${ico('arrowUp')}导入到 XTASY</button></div></div><button class="btn-o" id="vtAI">${ico('sparkle')}<span class="lbl">AI 审稿</span></button></div>
     </div>
     <div id="vtBody"></div>`;
   const $=id=>document.getElementById(id);
@@ -2324,7 +2334,7 @@ function viewVibeScript(id, tab){
     const want='#/script/v/'+w.id+'/'+tab; if(location.hash!==want) history.replaceState(null,'',want);
     drawNav({view:'tool', tool:TAB_FN[tab], sub:'vibe', wid:w.id, vibe:{id:w.id, title:w.title, tab}});
     document.querySelectorAll('#vtTabs button').forEach(b=>b.classList.toggle('on',b.dataset.t===tab));
-    document.querySelector('.vt-act').style.display = tab==='assets'||tab==='board' ? 'none' : '';
+    $('vtAI').style.display = tab==='assets'||tab==='board' ? 'none' : '';
     if(tab==='outline'){
       $('vtBody').innerHTML=`<div class="vtable"><div class="vr vh"><span>集</span><span>集名</span><span>状态</span><span>字数</span><span>大纲</span></div>
         ${s.outline.map(([h,b],i)=>`<div class="vr"><span>第 ${i+1} 集</span><span class="vn">${esc(h)}</span><span class="ok">已完成</span><span>${nfmt(epTxt(i).length)}</span>
@@ -2392,6 +2402,21 @@ function viewVibeScript(id, tab){
     }
   }
   document.querySelectorAll('#vtTabs button').forEach(b=>b.onclick=()=>{ tab=b.dataset.t; draw(); });
+  const exportFiles=()=>{
+    const safe=(w.title||'天玑作品').replace(/[\\/:*?"<>|]/g,'-');
+    const files=[
+      {name:'project.json',text:JSON.stringify({format:'tianji-project',version:1,title:w.title,exportedAt:new Date().toISOString(),settings:W},null,2)},
+      {name:'XTASY/manifest.json',text:JSON.stringify({format:'xtasy-import',version:1,project:w.title,aspectRatio:W.ratio||'9:16',episodes:s.outline.map(([title],i)=>({episode:i+1,title,promptFile:`../剧本/第${String(i+1).padStart(2,'0')}集-剧情对话.txt`,storyboardFile:`../分镜/第${String(i+1).padStart(2,'0')}集.json`}))},null,2)},
+      {name:'XTASY/导入说明.txt',text:'此压缩包已按 XTASY 项目交换格式整理。打开 XTASY 后进入项目/画布导入，选择本 ZIP；若当前版本不支持整包导入，可使用剧本目录中的单集文本逐集创建。'},
+      {name:'资产/资产清单.json',text:JSON.stringify({characters:[s.name,s.name2,'对手'],scenes:['主要场景'],ratio:W.ratio||'9:16'},null,2)}
+    ];
+    s.outline.forEach(([title,outline],i)=>{const no=String(i+1).padStart(2,'0'),t=epTxt(i),m=epMat(t);files.push({name:`剧本/第${no}集-大纲.txt`,text:`第 ${i+1} 集：${title}\n\n${outline}`},{name:`剧本/第${no}集-剧情对话.txt`,text:t},{name:`分镜/第${no}集.json`,text:JSON.stringify({episode:i+1,title,ratio:W.ratio||'9:16',characters:m.people,scenes:m.locs,prompt:t},null,2)});});
+    return {safe,blob:makeZip(files)};
+  };
+  $('vtExport').onclick=e=>{e.stopPropagation();$('exportMenu').classList.toggle('open');};
+  document.addEventListener('click',e=>{if(!e.target.closest('.export-wrap'))$('exportMenu')?.classList.remove('open')});
+  $('exportZip').onclick=()=>{const x=exportFiles();saveBlob(x.blob,`${x.safe}-天玑项目.zip`);$('exportMenu').classList.remove('open');toast('项目 ZIP 已导出到本地');};
+  $('exportXtasy').onclick=()=>{const x=exportFiles();saveBlob(x.blob,`${x.safe}-XTASY导入包.zip`);$('exportMenu').classList.remove('open');window.open('https://xtasyart.com/','_blank','noopener');toast('XTASY 导入包已下载，请在新页面选择导入');};
   $('vtAI').onclick=e=>{
     const review=[`你是短剧剧本审稿编辑。以下是《${w.title}》10 集剧本，请逐集审稿：`,
       '1. 红线：未成年、暴力色情、政治敏感、违法引导等合规问题，指出位置并直接给出改法。',
