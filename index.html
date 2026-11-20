@@ -57,6 +57,7 @@ button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 .points-card{padding:16px 16px 14px;margin-bottom:14px;border-radius:14px;background:#303030}
 .points-balance{font-size:16px;font-weight:700;margin-bottom:13px}.points-row{display:flex;align-items:center;gap:12px}.points-row span{flex:1;color:var(--text-2);font-size:13px}.upgrade{height:38px;padding:0 14px;border-radius:9px;background:#fff;color:#222;font-weight:600}.upgrade:hover{background:#ececec}
 .account-menu{display:grid}.account-link{display:flex;align-items:center;gap:13px;height:50px;padding:0 8px;border-radius:10px;text-decoration:none;color:#f4f4f4;font-size:15px;text-align:left}.account-link:hover{background:rgba(255,255,255,.06)}.account-link svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.membership-page{position:fixed;inset:0;z-index:40;overflow:auto;background:#131417;color:#fff;padding:22px 30px 70px}.membership-close{position:fixed;top:18px;right:22px;z-index:42;width:56px;height:56px;border-radius:50%;background:#242426;border:1px solid var(--line-2);font-size:32px;font-weight:200}.membership-inner{max-width:1480px;margin:auto}.membership-title{text-align:center;font-size:28px;margin:0 70px 34px}.billing-row{display:flex;align-items:center;justify-content:center;gap:56px;margin-bottom:34px}.billing-tabs{width:min(760px,100%);display:grid;grid-template-columns:repeat(4,1fr);padding:4px;border-radius:28px;background:#1d1e22}.billing-tabs button{height:46px;border-radius:24px}.billing-tabs button.on{background:#303136}.billing-tabs small{color:#8e95a5;margin-left:5px}.billing-tabs .hot small{color:#00a8ff}.billing-links{display:flex;gap:12px;white-space:nowrap}.billing-links button.on{border:1px solid #777;border-radius:24px;padding:9px 18px}.plans{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:18px}.plan{display:flex;flex-direction:column;min-height:560px;border-radius:28px;background:#242424;border:1px solid transparent;overflow:hidden}.plan.pro{background:#0d182a;border-color:#0797ff}.plan.max{background:#1d1715;border-color:#ff6a00}.plan-ribbon{height:46px;display:grid;place-items:center;background:#0797f4;font-size:13px}.plan.max .plan-ribbon{background:#ff6900}.plan-body{display:flex;flex:1;flex-direction:column;padding:30px}.plan h2{font-size:19px;margin:0 0 12px}.plan-price{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}.plan-price b{font-size:46px;line-height:1}.plan-price s{color:#9297a2}.plan-note{min-height:58px;color:#aeb4c0;font-size:13px}.plan-points{margin-top:auto;padding:16px 18px;border-radius:15px;background:rgba(255,255,255,.055)}.plan-points b{display:block}.plan-points span{color:#9ca4b2;font-size:12px}.buy-plan{height:52px;margin:20px 0;border-radius:26px;background:#fff;color:#171717}.plan.pro .buy-plan{background:#0797f4;color:#fff}.plan.max .buy-plan{background:#ff6900;color:#fff}.plan-benefits{display:grid;gap:13px;font-size:14px}.plan-benefits span::before{content:'✓';margin-right:10px}.plan-extra{margin:22px -30px -30px;padding:20px 30px;background:rgba(255,255,255,.025)}.compare{margin-top:46px}.compare h2{text-align:center;font-size:27px}.compare-scroll{overflow-x:auto}.compare-grid{min-width:900px}.compare-head,.compare-row{display:grid;grid-template-columns:1.25fr repeat(5,1fr);align-items:center}.compare-head{position:sticky;top:-22px;z-index:2;background:#131417;padding:12px 0}.compare-plan strong{display:block;font-size:30px;margin:7px 0}.compare-plan button{width:80%;height:42px;border-radius:23px;background:#f5f5f5;color:#191919}.compare-section{margin-top:30px;padding:20px 24px;border-radius:15px;background:#1e1f23;font-size:17px}.compare-row{min-height:82px;border-bottom:1px solid var(--line);padding:0 24px}.compare-row>span:not(:first-child){text-align:center}.compare-row .yes{font-size:22px}.membership-foot{text-align:center;color:#8f96a5;margin-top:48px}
 .soon{max-width:560px;margin:90px auto 0;text-align:center}
 .soon .big{width:88px;height:88px;margin:0 auto 22px;border-radius:24px;background:#1d1d20;border:1px solid var(--line-2);display:grid;place-items:center}
 .soon .big svg{width:42px;height:42px;stroke:#fff;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
@@ -841,6 +842,7 @@ a.pt-banner:hover{transform:translateY(-2px)}
   .account-trigger{height:34px;padding:0 4px 0 8px;gap:6px}
   .account-trigger .spark{width:14px;height:14px}.account-trigger .points-number{font-size:12px}.account-trigger .account-avatar{width:26px;height:26px;font-size:14px}
   .account-panel{position:fixed;top:62px;right:10px;width:min(390px,calc(100vw - 20px));max-height:calc(100vh - 72px);overflow:auto}
+  .membership-page{padding:18px 14px 50px}.membership-close{top:12px;right:12px;width:44px;height:44px}.membership-title{font-size:21px;margin:2px 50px 24px}.billing-row{display:block}.billing-tabs{display:flex;overflow-x:auto}.billing-tabs button{min-width:130px}.billing-links{margin:14px 0 24px;justify-content:center}.plans{display:flex;overflow-x:auto;scroll-snap-type:x mandatory}.plan{min-width:285px;scroll-snap-align:start}.plan-body{padding:24px 22px}.plan-extra{margin:22px -22px -24px;padding:20px 22px}
   .tb-seg{flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
   .tb-seg a{height:34px;padding:0 6px;gap:3px;font-size:13px}
   .tb-seg svg{width:16px;height:16px}
@@ -880,12 +882,21 @@ a.pt-banner:hover{transform:translateY(-2px)}
   <nav class="tb-seg" id="tbSeg"></nav>
   <span class="pro-slot tb-pro"></span>
   <div class="account" id="account">
-    <button class="account-trigger" id="accountTrigger" aria-expanded="false" aria-controls="accountPanel" aria-label="账户与积分"><svg class="spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c1.1 5.1 4.2 8.2 9.3 9.3-5.1 1.1-8.2 4.2-9.3 9.3-1.1-5.1-4.2-8.2-9.3-9.3C7.8 10.7 10.9 7.6 12 2.5Z"/></svg><span class="points-number">43</span><span class="account-avatar">天</span></button>
+    <button class="account-trigger" id="accountTrigger" aria-expanded="false" aria-controls="accountPanel" aria-label="账户与积分">
+      <svg class="spark" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5c1.1 5.1 4.2 8.2 9.3 9.3-5.1 1.1-8.2 4.2-9.3 9.3-1.1-5.1-4.2-8.2-9.3-9.3C7.8 10.7 10.9 7.6 12 2.5Z"/></svg>
+      <span class="points-number">43</span><span class="account-avatar">天</span>
+    </button>
     <section class="account-panel" id="accountPanel" aria-label="账户信息">
-      <div class="account-head"><span class="account-avatar">天</span><div><div class="account-name">天玑创作人</div><div class="account-tier">非会员</div></div></div><div class="account-label">当前空间</div>
+      <div class="account-head"><span class="account-avatar">天</span><div><div class="account-name">天玑创作人</div><div class="account-tier">非会员</div></div></div>
+      <div class="account-label">当前空间</div>
       <button class="space-card" type="button"><span class="space-icon">天</span><span class="space-copy"><b>个人空间</b><span>仅自己可见</span></span><span class="space-arrow">›</span></button>
       <div class="points-card"><div class="points-balance">积分余额：43</div><div class="points-row"><span>创作成本直降，会员低至 4.5 折</span><button class="upgrade" type="button">升级会员</button></div></div>
-      <nav class="account-menu"><a class="account-link" href="#/help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.8 2c-1.1.7-1.6 1.1-1.6 2.4M12 17.2v.1"/></svg>帮助中心</a><a class="account-link" href="#/manual"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 7h6M9 11h5"/></svg>使用手册</a><button class="account-link" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6"/></svg>快捷键</button><button class="account-link" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 15V9l3 6V9M14 15l2-6 2 6M14.8 13h2.4"/></svg>AI 生成水印设置</button></nav>
+      <nav class="account-menu">
+        <a class="account-link" href="#/help"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.8 9a2.4 2.4 0 1 1 3.8 2c-1.1.7-1.6 1.1-1.6 2.4M12 17.2v.1"/></svg>帮助中心</a>
+        <a class="account-link" href="#/manual"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 7h6M9 11h5"/></svg>使用手册</a>
+        <button class="account-link" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="3"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h6"/></svg>快捷键</button>
+        <button class="account-link" type="button"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M8 15V9l3 6V9M14 15l2-6 2 6M14.8 13h2.4"/></svg>AI 生成水印设置</button>
+      </nav>
     </section>
   </div>
 </header>
@@ -2546,13 +2557,32 @@ function setPanel(open){
 }
 document.getElementById('psOpen').onclick = () => setPanel(true);
 
+// 右上角账户、积分与空间面板
 const account = document.getElementById('account');
 const accountTrigger = document.getElementById('accountTrigger');
 function setAccount(open){ account.classList.toggle('open',open); accountTrigger.setAttribute('aria-expanded',String(open)); }
 accountTrigger.onclick = e => { e.stopPropagation(); setAccount(!account.classList.contains('open')); };
 account.querySelector('.account-panel').onclick = e => e.stopPropagation();
+account.querySelector('.upgrade').onclick = () => { setAccount(false); location.hash='#/membership'; };
 document.addEventListener('click',()=>setAccount(false));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setAccount(false); });
+
+function viewMembership(){
+  const plans=[
+    {name:'基础会员',price:'113',old:'188',points:'725',rate:'换算 ¥1 = 19 积分',note:'首季 6.1 折 ¥113，下季续费 ¥188',benefits:['Seedance 2.0 VIP','标准生成通道','生成作品去除品牌水印']},
+    {name:'标准会员',price:'341',old:'568',points:'2210',rate:'换算 ¥1 = 19 积分',note:'首季 6.1 折 ¥341，下季续费 ¥568',benefits:['Seedance 2.0 VIP','标准生成通道','生成作品去除品牌水印']},
+    {name:'高级会员',price:'1227',old:'2798',points:'12320',rate:'换算 ¥1 = 30 积分',note:'首季 4.4 折 ¥1,227，下季续费 ¥2,798',ribbon:'SD 系列 2.5 Flash ¥0.63/秒｜2.5 ¥0.43/秒',cls:'pro',benefits:['Seedance 2.0 VIP','快速生成通道','生成作品去除品牌水印']},
+    {name:'超级会员',price:'4999',old:'11699',points:'54600',rate:'换算 ¥1 = 33 积分',note:'首季 4.3 折 ¥4,999，下季续费 ¥11,699',ribbon:'SD 系列 2.5 Flash ¥0.58/秒｜2.5 ¥0.24/秒',cls:'max',benefits:['Seedance 2.0 VIP','快速生成通道','生成作品去除品牌水印','API 服务购买']}
+  ];
+  const cols=['Free','基础会员','标准会员','高级会员','超级会员'];
+  const row=(label,vals)=>`<div class="compare-row"><span>${label}</span>${vals.map(v=>`<span class="${v==='✓'?'yes':''}">${v}</span>`).join('')}</div>`;
+  document.getElementById('view').innerHTML=`<section class="membership-page"><button class="membership-close" id="membershipClose" aria-label="关闭">×</button><div class="membership-inner"><h1 class="membership-title">订阅天玑会员，畅享专业 AI 创作能力</h1><div class="billing-row"><div class="billing-tabs" id="billingTabs"><button>连续包年 <small>低至 ¥0.16/秒</small></button><button>连续包月 <small>4 折</small></button><button class="on hot">连续包季 <small>限时 4.3 折</small></button><button>单月购买</button></div><div class="billing-links"><button class="on">企业采购</button><button>购买积分</button><button>积分详情</button></div></div>
+  <div class="plans">${plans.map(p=>`<article class="plan ${p.cls||''}">${p.ribbon?`<div class="plan-ribbon">${p.ribbon}</div>`:''}<div class="plan-body"><h2>${p.name}</h2><div class="plan-price"><span>¥</span><b>${p.price}</b><span>每季</span><s>¥${p.old}</s></div><div class="plan-note">折算 ¥${Math.round(+p.price/3)}/月<br>${p.note}</div><div class="plan-points"><b>✦ ${p.points} 积分每月</b><span>${p.rate}</span></div><button class="buy-plan" data-plan="${p.name}">¥${p.price} 首季优惠</button><div class="plan-benefits">${p.benefits.map(x=>`<span>${x}</span>`).join('')}</div><div class="plan-extra"><b>无限生成权益 ⓘ</b><p>Seedream 5.5　2K　30 天无限</p><p>Seedream 5.0 Flash　2K　${p.cls?'365':'180'} 天无限</p></div></div></article>`).join('')}</div>
+  <div class="compare"><h2>哪个计划更适合你</h2><div class="compare-scroll"><div class="compare-grid"><div class="compare-head"><span></span>${cols.map((c,i)=>`<div class="compare-plan"><b>${c}</b><strong>¥${i?plans[i-1].price:'0'} <small>${i?'每季':'每月'}</small></strong><button data-plan="${c}">${i?'选择方案':'当前计划'}</button></div>`).join('')}</div><div class="compare-section">积分</div>${row('平台免费积分',['每日登录免费积分','每日登录赠送积分','每日登录赠送积分','每日登录赠送积分','每日登录赠送积分'])}${row('充值购买积分',['✓','✓','✓','✓','✓'])}${row('订阅会员积分',['-','每月 725 积分','每月 2210 积分','每月 12320 积分','每月 54600 积分'])}<div class="compare-section">视频生成</div>${row('Seedance 2.0 VIP 模型',['-','✓','✓','✓','✓'])}${row('视频生成专享加速',['-','标准生成通道','标准生成通道','快速生成通道','快速生成通道'])}${row('视频对口型',['-','✓','✓','✓','✓'])}${row('视频高清',['-','✓','✓','✓','✓'])}${row('视频补帧',['-','✓','✓','✓','✓'])}<div class="compare-section">图片生成</div>${row('智能超清',['-','4K','4K','4K / 8K','4K / 8K'])}<div class="compare-section">全局能力</div>${row('去除品牌水印',['-','✓','✓','✓','✓'])}${row('生成加速',['-','✓','✓','✓','✓'])}</div></div></div><p class="membership-foot">订阅积分每 31 天进行重置</p></div></section>`;
+  document.getElementById('membershipClose').onclick=()=>history.length>1?history.back():location.hash='#/';
+  document.querySelectorAll('#billingTabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('#billingTabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');toast('已切换计费周期');});
+  document.querySelectorAll('[data-plan]').forEach(b=>b.onclick=()=>toast(b.dataset.plan==='Free'?'当前为免费计划':`已选择${b.dataset.plan}，支付功能暂未开放`));
+}
 
 /* ---------- views ---------- */
 const state = {q:'', lic:'all', prod:false};
@@ -2760,6 +2790,7 @@ function viewAssembler(ep){
 /* ---------- router ---------- */
 function parse(){
   const h=location.hash.replace(/^#\/?/,'');
+  if(h==='membership') return {view:'membership'};
   if(h.startsWith('e/')) {const e=byId[h.slice(2)];return {view:'entry',id:h.slice(2),folder:e&&e.folder}}
   if(h.startsWith('f/')) return {view:'list',folder:h.slice(2)};
   if(h==='assembler'||h==='changelog') return {view:h};
@@ -2781,6 +2812,7 @@ function route(){
   document.body.classList.toggle('ps-off', matchMedia('(max-width:760px)').matches || store('panel')===false);
   document.querySelector('.tb-logo').classList.toggle('on', r.view==='start');
   if(r.view==='start') viewScriptSimple();
+  else if(r.view==='membership') viewMembership();
   else if(r.view==='entry') viewEntry(r.id);
   else if(r.view==='assembler') viewAssembler(r.ep);
   else if(r.view==='tool' && r.tool==='assets') r.fn ? viewAssetEditor(r.fn, r.idx) : viewAssets();
