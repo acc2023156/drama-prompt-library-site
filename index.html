@@ -443,6 +443,13 @@ a.pill{text-decoration:none}
 .vtile svg{width:22%;height:22%;stroke:#fff;fill:none;stroke-width:1.5;opacity:.9}
 .vep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:18px}
 .vep{display:flex;gap:20px;padding:16px;border-radius:22px;background:#1b1b1e;border:1px solid var(--line)}
+.gen-wait{margin:28px auto 0;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:36px 20px;border:1px solid var(--line-2);border-radius:20px;background:#17171a;text-align:center}
+.gen-wait b{font-size:17px}
+.gen-wait em{font:600 15px Inter,var(--font);font-style:normal;color:var(--text-3)}
+.gen-wait .row{gap:10px;justify-content:center;flex-wrap:wrap}
+.gen-wait .bigbtn{width:auto;padding:0 24px}
+.gw-spin{width:38px;height:38px;border-radius:50%;border:3px solid rgba(139,69,255,.25);border-top-color:var(--brand);animation:gwSpin 1s linear infinite}
+@keyframes gwSpin{to{transform:rotate(360deg)}}
 .vep-th{cursor:pointer;color:inherit;padding:0;border:0;transition:transform .15s}
 .vep-th:hover{transform:scale(1.03)}
 .vm{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.75);display:grid;place-items:center;padding:16px;animation:vmIn .15s ease-out}
@@ -712,6 +719,11 @@ a.pt-banner:hover{transform:translateY(-2px)}
 .modeseg{position:relative;display:flex;width:min(560px,100%);margin:22px auto 0;padding:4px;border-radius:999px;background:#3a3a3c;border:1px solid rgba(255,255,255,.08)}
 .modeseg button{flex:1;height:56px;border-radius:999px;font-size:18px;color:#f2f2f2;transition:color .2s}
 .modeseg button.on{color:#151515;font-weight:600;background:radial-gradient(60px 30px at 30% 50%,rgba(255,190,160,.75),transparent 70%),radial-gradient(70px 30px at 72% 50%,rgba(120,220,255,.75),transparent 70%),#fafafa;box-shadow:0 4px 18px rgba(0,0,0,.35)}
+/* ---------- 首页测试：行星轨道排行 ---------- */
+.orbit-sec{margin:34px auto 42px;padding:24px;border-radius:24px;border:1px solid var(--line);background:linear-gradient(145deg,#17171b,#111216);overflow:hidden}.orbit-head{display:flex;align-items:flex-end;gap:18px;margin-bottom:18px}.orbit-head h2{margin:0;font-size:22px}.orbit-head p{margin:2px 0 0;color:var(--text-3);font-size:13px}.orbit-head .sp{flex:1}.orbit-ranges{display:flex;padding:3px;border-radius:999px;background:#24252a}.orbit-ranges button{height:32px;padding:0 13px;border-radius:999px;color:var(--text-2);font-size:12px}.orbit-ranges button.on{background:#fff;color:#151515}.orbit-layout{display:grid;grid-template-columns:minmax(440px,1.25fr) minmax(280px,.75fr);gap:24px;align-items:center}.orbit-stage{position:relative;min-height:480px;border-radius:22px;background:radial-gradient(circle at center,rgba(115,29,251,.15),transparent 18%),radial-gradient(circle at center,rgba(63,182,255,.08),transparent 46%),#0d0e12;overflow:hidden}.orbit-stars{position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.22) .8px,transparent .9px);background-size:24px 24px;mask-image:radial-gradient(circle,#000 30%,transparent 90%)}.orbit-line{position:absolute;left:50%;top:50%;translate:-50% -50%;border:1px solid rgba(255,255,255,.12);border-radius:50%;pointer-events:none}.orbit-line.o1{width:190px;height:190px}.orbit-line.o2{width:310px;height:310px}.orbit-line.o3{width:430px;height:430px}.orbit-core{position:absolute;left:50%;top:50%;translate:-50% -50%;z-index:3;width:126px;height:126px;border-radius:50%;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 35% 30%,#d6b8ff,#7b2fff 48%,#32106f);box-shadow:0 0 45px rgba(139,69,255,.55)}.orbit-core b{display:block;font-size:18px}.orbit-core strong{display:block;font-size:31px}.planet-path{position:absolute;inset:0;animation:orbit-spin var(--dur) linear infinite}.planet{position:absolute;left:50%;top:50%;width:var(--size);height:var(--size);margin:calc(var(--size)/-2);transform:translateX(var(--radius));border-radius:50%;display:grid;place-items:center;text-align:center;padding:7px;background:var(--color);color:#fff;box-shadow:0 0 24px color-mix(in srgb,var(--color),transparent 45%);animation:orbit-counter var(--dur) linear infinite;line-height:1.15}.planet b{font-size:12px}.planet span{font-size:11px;opacity:.82}.planet:focus-visible{outline:3px solid #fff;outline-offset:4px}.planet-path.paused,.planet-path.paused .planet{animation-play-state:paused}.orbit-side{display:grid;gap:8px}.orbit-side h3{margin:0 0 6px;font-size:15px}.rank-row{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:11px 12px;border-radius:13px;border:1px solid transparent;background:#1b1c20;text-align:left}.rank-row:hover,.rank-row.on{border-color:var(--c);background:#222329}.rank-row i{font-style:normal;color:var(--text-3)}.rank-row b{font-size:14px}.rank-row small{display:block;color:var(--text-3)}.rank-row strong{font-size:18px}.orbit-detail{margin-top:8px;padding:15px;border-radius:15px;background:var(--brand-soft);border:1px solid rgba(139,69,255,.28)}.orbit-detail b{display:block}.orbit-detail span{color:var(--text-2);font-size:13px}.orbit-note{margin:14px 0 0;color:var(--text-3);font-size:12px}
+.planet-path{transform:rotate(var(--angle))}.planet-path.ring1{--radius:95px}.planet-path.ring2{--radius:155px}.planet-path.ring3{--radius:215px}
+@keyframes orbit-spin{from{transform:rotate(var(--angle))}to{transform:rotate(calc(var(--angle) + 360deg))}}@keyframes orbit-counter{from{transform:translateX(var(--radius)) rotate(calc(-1 * var(--angle)))}to{transform:translateX(var(--radius)) rotate(calc(-1 * var(--angle) - 360deg))}}
+@media (prefers-reduced-motion:reduce){.planet-path,.planet{animation:none}.planet-path{transform:rotate(var(--angle))}.planet{transform:translateX(var(--radius)) rotate(calc(-1 * var(--angle)))}}
 .lib{padding-bottom:40px}
 .lib-card{border-radius:22px;border:1px solid var(--line);background:#151517;padding:22px 24px 24px}
 .lib-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
@@ -749,6 +761,8 @@ a.pt-banner:hover{transform:translateY(-2px)}
 .lib-studio:hover{background:var(--brand-2)}
 .lib-studio svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
 @media (max-width:760px){.modeseg button{height:48px;font-size:16px}.lib-card{padding:16px}.lib-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.lib-detail{grid-template-columns:1fr}.lib-detail .art.big{width:160px}}
+@media (max-width:760px){.orbit-sec{padding:18px 14px}.orbit-head{align-items:flex-start;flex-wrap:wrap}.orbit-head .sp{display:none}.orbit-layout{grid-template-columns:1fr}.orbit-stage{min-height:360px}.orbit-line.o1{width:145px;height:145px}.orbit-line.o2{width:235px;height:235px}.orbit-line.o3{width:325px;height:325px}.orbit-core{width:100px;height:100px}.orbit-core strong{font-size:25px}.orbit-side{grid-template-columns:1fr 1fr}.orbit-side h3,.orbit-detail{grid-column:1/-1}.rank-row{grid-template-columns:22px 1fr auto;padding:9px}.rank-row strong{font-size:15px}}
+@media (max-width:760px){.planet-path.ring1{--radius:72px}.planet-path.ring2{--radius:117px}.planet-path.ring3{--radius:162px}}
 .roles.flash .role{animation:flash 1s ease 2}
 @keyframes flash{0%,100%{border-color:var(--line)}50%{border-color:var(--brand);box-shadow:0 0 0 3px rgba(139,69,255,.35)}}
 .magic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
@@ -2036,7 +2050,7 @@ function sxScript(s){
   });
 }
 const sxScriptText = s => `《${s.title}》10 集完整台词\n主角：${s.name}（${s.role.type}）\n\n`+sxScript(s).join('\n\n---\n\n');
-function sxHL(txt){ return esc(txt).split('\n').map(l=>/^△/.test(l)?`<span class="a">${l}</span>`:/^音乐提示|^&gt;/.test(l)?`<span class="m">${l}</span>`:/^#/.test(l)?`<b class="d">${l.replace(/^#+\s*/,'')}</b>`:/：“/.test(l)?`<span class="d">${l}</span>`:l).join('\n'); }
+function sxHL(txt){ return esc(txt).split('\n').map(l=>/^△|^\[画面\]|^【/.test(l)?`<span class="a">${l}</span>`:/^音乐提示|^&gt;/.test(l)?`<span class="m">${l}</span>`:/^#/.test(l)?`<b class="d">${l.replace(/^#+\s*/,'')}</b>`:/：“|：「/.test(l)?`<span class="d">${l}</span>`:l).join('\n'); }
 
 /* ---------- 天玑 AI短剧伙伴计划 ---------- */
 function partnerBanner(){
@@ -2137,6 +2151,11 @@ function viewScriptSimple(){
     </section>
     ${partnerBanner()}
     </div>
+    <section class="orbit-sec" aria-labelledby="orbitTitle">
+      <div class="orbit-head"><div><h2 id="orbitTitle">行星轨道排行 <span class="tag int">测试</span></h2><p>轨道距离代表名次，行星大小代表热度指数</p></div><span class="sp"></span><div class="orbit-ranges" id="orbitRanges"><button data-r="1h">1 小时</button><button class="on" data-r="24h">24 小时</button><button data-r="7d">7 天</button></div></div>
+      <div class="orbit-layout"><div class="orbit-stage" id="orbitStage" aria-label="短剧热点行星轨道排行"><span class="orbit-stars"></span><i class="orbit-line o1"></i><i class="orbit-line o2"></i><i class="orbit-line o3"></i><div class="orbit-core" id="orbitCore"></div></div><div class="orbit-side" id="orbitRanks"></div></div>
+      <p class="orbit-note">模拟测试数据 · 热度指数与声量占比分开呈现，动态仅表达排行浏览，不代表实时上涨。</p>
+    </section>
     <section class="lib" id="mLib"></section>
     <div id="mCreate">
     <div class="sx-bar">
@@ -2155,6 +2174,23 @@ function viewScriptSimple(){
     </div>
     </div>`;
   const $=id=>document.getElementById(id);
+  const orbitData={
+    '1h':[['AI 短剧',94,31,'+12'],['重生复仇',88,23,'+8'],['真假千金',80,17,'+3'],['末日求生',72,12,'+15'],['先婚后爱',66,10,'-2'],['悬疑反转',58,7,'+4']],
+    '24h':[['AI 短剧',92,28,'+9'],['重生复仇',86,24,'+5'],['真假千金',79,18,'+6'],['先婚后爱',71,13,'-1'],['末日求生',68,10,'+11'],['悬疑反转',61,7,'+2']],
+    '7d':[['重生复仇',90,27,'+4'],['AI 短剧',88,24,'+7'],['真假千金',82,19,'+2'],['先婚后爱',76,14,'+3'],['悬疑反转',65,9,'+6'],['末日求生',59,7,'-3']]
+  }, orbitColors=['#8b45ff','#247cff','#00a88b','#ef8a35','#e34c7d','#6d7a91'];
+  let orbitRange='24h', orbitSelected=0;
+  function drawOrbit(){
+    const data=orbitData[orbitRange], stage=$('orbitStage'), ranks=$('orbitRanks'), top=data[0];
+    stage.querySelectorAll('.planet-path').forEach(x=>x.remove());
+    $('orbitCore').innerHTML=`<span><b>${top[0]}</b><strong>${top[1]}</strong><small>热度指数 · ${top[2]}% 声量</small></span>`;
+    data.slice(1).forEach((d,j)=>{const i=j+1,path=document.createElement('span'),ring=j<1?1:j<3?2:3;path.className=`planet-path ring${ring}`;path.style.cssText=`--angle:${[30,155,255,80,205][j]}deg;--dur:${[24,32,28,38,34][j]}s`;path.innerHTML=`<button class="planet" data-orbit="${i}" style="--size:${Math.round(48+d[1]*.32)}px;--color:${orbitColors[i]}" aria-label="第 ${i+1} 名 ${d[0]}，热度 ${d[1]}"><b>${d[0]}</b><span>${d[1]}</span></button>`;stage.append(path);});
+    ranks.innerHTML=`<h3>TOP 6 热点</h3>${data.map((d,i)=>`<button class="rank-row ${i===orbitSelected?'on':''}" data-orbit="${i}" style="--c:${orbitColors[i]}"><i>${String(i+1).padStart(2,'0')}</i><span><b>${d[0]}</b><small>声量占比 ${d[2]}% · 趋势 ${d[3]}</small></span><strong>${d[1]}</strong></button>`).join('')}<div class="orbit-detail"><b>${data[orbitSelected][0]}</b><span>热度指数 ${data[orbitSelected][1]}；全站声量占比 ${data[orbitSelected][2]}%；周期趋势 ${data[orbitSelected][3]}。</span></div>`;
+    document.querySelectorAll('[data-orbit]').forEach(b=>b.onclick=()=>{orbitSelected=+b.dataset.orbit;drawOrbit();});
+    stage.onmouseenter=()=>stage.querySelectorAll('.planet-path').forEach(x=>x.classList.add('paused'));stage.onmouseleave=()=>stage.querySelectorAll('.planet-path').forEach(x=>x.classList.remove('paused'));
+  }
+  document.querySelectorAll('#orbitRanges button').forEach(b=>b.onclick=()=>{orbitRange=b.dataset.r;orbitSelected=0;document.querySelectorAll('#orbitRanges button').forEach(x=>x.classList.toggle('on',x===b));drawOrbit();});
+  drawOrbit();
   const list=()=>DATA.roles[st.g];
   function save(){ store('sxPick',st); }
   function randomize(){
@@ -2294,6 +2330,8 @@ function epMat(t){
   const people=new Set(), locs=new Set();
   for(const m of t.matchAll(/^出场人物：(.+)$/gm)) m[1].split(/[、，,]/).map(x=>x.trim()).filter(Boolean).forEach(x=>people.add(x));
   for(const m of t.matchAll(/^场景：[^·]*·\s*([^·\n]+?)\s*·/gm)) locs.add(m[1]);
+  for(const m of t.matchAll(/^#{2,4}\s*场\s*\d+\s*[｜|]\s*([^（(\n]+)/gm)) locs.add(m[1].trim());
+  for(const m of t.matchAll(/^([一-龥]{2,5})(?:（[^）]*）)?：[「“]/gm)) people.add(m[1]);
   return {people:[...people], locs:[...locs]};
 }
 let vmEsc=null;
@@ -2305,20 +2343,102 @@ function openVm(html){
   vmEsc=e=>{ if(e.key==='Escape') closeVm(); }; document.addEventListener('keydown',vmEsc);
   return m;
 }
+/* 真实模型：开写 → Worker 建单 → GitHub Actions 跑整剧 → 网页轮询。没有通行码时照旧用模板草稿 */
+const TJ_API='https://tianji-api.sha-platform.workers.dev';
+(()=>{ try{ const k=new URLSearchParams(location.search).get('k'); if(k){ store('tjCode',k); history.replaceState(null,'',location.pathname+location.hash); } }catch(e){} })();
+const tjCode=()=>store('tjCode');
+async function tjApi(path, body){
+  const r=await fetch(TJ_API+path,{method:body?'POST':'GET', headers:{'X-Tianji-Code':tjCode()||'', ...(body?{'Content-Type':'application/json'}:{})}, body:body?JSON.stringify(body):undefined});
+  const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error(j.error||('HTTP '+r.status)); return j;
+}
+function genReq(W0){
+  const W=Object.assign({}, WZ_DEF, W0), mins=wzMins(W)||1;
+  const req={logline:(W.pitch||'').trim(), audience:W.aud, setting:W.genre, episodes:Math.min(12,Math.max(2,+wzEps(W)||10)),
+    chars_per_episode:Math.min(1300,Math.max(400,Math.round(mins*400))), explicit_ratio:[0,0]};
+  const core=(W.core||'').trim(); if(core) req.theme=core;
+  if((W.hooks||[]).length) req.tone=W.hooks.join('、');
+  return req;
+}
+function genParse(r){
+  const x=r.x_gateway||{}, fw=x.framework||{};
+  const outline=(fw.episodes||[]).map((e,i)=>({title:e.title||`第${i+1}集`, body:[e.event, e.hook?`钩子：${e.hook}`:''].filter(Boolean).join('\n\n')}));
+  const eps=[]; (x.episodes||[]).forEach((e,i)=>{ eps[(e.ep||i+1)-1]=e.text||''; });
+  const cast=[]; for(const m of String(x.cards||'').matchAll(/\*\*([^*（(]+)[（(]([^)）]+)[)）]\*\*\s*\n([\s\S]*?)(?=\n\s*\*\*|$)/g)) cast.push({name:m[1].trim(), role:m[2].trim(), bio:m[3].trim()});
+  return {title:fw.title||x.title||'', logline:fw.logline||'', outline, eps, cast};
+}
+function updateGen(wid, patch){
+  const list=store('works')||[], w=list.find(x=>x.id===wid); if(!w) return null;
+  w.gen = patch===null ? null : {...(w.gen||{}), ...patch};
+  if(w.gen&&w.gen.status==='done'&&w.gen.data&&w.gen.data.title&&!((w.W||{}).title||'').trim()) w.title=w.gen.data.title;
+  store('works',list); return w;
+}
+function startGen(w){
+  const req=genReq(w.W);
+  updateGen(w.id,{status:'starting', at:Date.now(), req, id:null, err:null});
+  tjApi('/jobs',{messages:[{role:'user',content:JSON.stringify(req)}]})
+    .then(j=>updateGen(w.id,{status:'queued', id:j.id}))
+    .catch(e=>updateGen(w.id,{status:'error', err:e.message}));
+}
+/* 作品的剧本：有模型结果就用模型的，否则用模板草稿 */
+function vibeData(w){
+  const s=vibeSx(w), g=w.gen;
+  if(g&&g.status==='done'&&g.data&&g.data.outline.length){
+    const d=g.data;
+    s.outline=d.outline.map(o=>[o.title,o.body]); s.cast=d.cast; s.real=true;
+    const eps=s.outline.map(([h,b],i)=>`# 第${i+1}集：${h}\n`+(d.eps[i] ? d.eps[i].replace(/^#{1,3}\s*第\s*\d+\s*集[^\n]*\n+/,'') : b));
+    return {s, eps};
+  }
+  return {s, eps:sxScript(s)};
+}
+const mmss=sec=>`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`;
+function genWait(v, w, tab){
+  const g=w.gen;
+  drawNav({view:'tool', tool:'script', sub:'vibe', wid:w.id, vibe:{id:w.id, title:w.title, tab}});
+  v.innerHTML=`${backBar('#/script')}
+    <section class="done-hero"><h1>《${esc(w.title)}》</h1></section>
+    <div class="gen-wait"><span class="gw-spin"></span><b>AI 正在写这部剧</b><em id="gwT">00:00</em></div>`;
+  let n=0;
+  const iv=setInterval(async()=>{
+    const el=document.getElementById('gwT'); if(!el){ clearInterval(iv); return; }
+    el.textContent=mmss(Math.floor((Date.now()-g.at)/1000));
+    if(n++%8) return;
+    const cur=((store('works')||[]).find(x=>x.id===w.id)||{}).gen||{};
+    if(!cur.id){ if(cur.status==='error'||Date.now()-g.at>90000){ clearInterval(iv); if(cur.status!=='error') updateGen(w.id,{status:'error',err:'start failed'}); viewVibeScript(w.id,tab); } return; }
+    try{
+      const j=await tjApi('/jobs/'+cur.id);
+      if(j.status==='done'&&j.result){ clearInterval(iv); updateGen(w.id,{status:'done', data:genParse(j.result)}); if(document.getElementById('gwT')) viewVibeScript(w.id,tab); }
+      else if(j.status==='error'){ clearInterval(iv); updateGen(w.id,{status:'error', err:j.error||''}); if(document.getElementById('gwT')) viewVibeScript(w.id,tab); }
+    }catch(e){}
+  },1000);
+}
+function genFail(v, w, tab){
+  drawNav({view:'tool', tool:'script', sub:'vibe', wid:w.id, vibe:{id:w.id, title:w.title, tab}});
+  v.innerHTML=`${backBar('#/script')}
+    <section class="done-hero"><h1>《${esc(w.title)}》</h1></section>
+    <div class="gen-wait"><b>这次没写成</b><div class="row"><button class="bigbtn" id="gRetry">${ico('sparkle')}再写一次</button><button class="btn-o" id="gDraft">先看草稿</button></div></div>`;
+  document.getElementById('gRetry').onclick=()=>{ updateGen(w.id,null); viewVibeScript(w.id,tab); };
+  document.getElementById('gDraft').onclick=()=>{ updateGen(w.id,{status:'off'}); viewVibeScript(w.id,tab); };
+}
 function viewVibeScript(id, tab){
   const v=document.getElementById('view'), list=store('works')||[], w=list.find(x=>x.id===id);
   if(!w){ v.innerHTML='<div class="empty">找不到这部作品，可能已在别的浏览器里。</div>'; return; }
   store('lastVibe', w.id);
   if(!w.vname || !w.seed){ const s0=vibeSx(w); w.vname=s0.name; w.seed=w.seed||Math.floor(Math.random()*1e9)+1; store('works',list); }
-  let s=vibeSx(w), eps=sxScript(s);
-  const W=s.W, ai=W.ai||'Claude', site=AI_SITES[ai];
   tab = tab || store('vibeTab') || 'outline';
+  if(tjCode()){
+    if(w.gen && w.gen.req && w.gen.status!=='off' && JSON.stringify(w.gen.req)!==JSON.stringify(genReq(w.W))) w.gen=null;
+    if(w.gen==null){ startGen(w); return viewVibeScript(id, tab); }
+  }
+  if(w.gen && /starting|queued|running/.test(w.gen.status)) return genWait(v, w, tab);
+  if(w.gen && w.gen.status==='error') return genFail(v, w, tab);
+  let {s, eps}=vibeData(w);
+  const W=s.W, ai=W.ai||'Claude', site=AI_SITES[ai];
   const TABS=[['outline','各集大纲'],['script','剧情对话'],['assets','角色资产库'],['board','分镜图']];
   v.innerHTML=`
     <div class="res-back"><a class="pill" href="#/script">${ico('back')}返回</a></div>
     <section class="done-hero">
       <h1>《${esc(w.title)}》</h1>
-      <div class="stats"><span><b>10</b>集</span><span><b>${wzMins(W)}</b>分钟 / 集</span><span>${esc(W.aud)}</span><span>${esc(W.pair)}</span>${W.style&&W.style!=='无'?`<span>${esc(W.style)}</span>`:''}<span>${esc(W.ratio||'9:16')}</span></div>
+      <div class="stats"><span><b>${s.outline.length}</b>集</span><span><b>${wzMins(W)}</b>分钟 / 集</span><span>${esc(W.aud)}</span><span>${esc(W.pair)}</span>${W.style&&W.style!=='无'?`<span>${esc(W.style)}</span>`:''}<span>${esc(W.ratio||'9:16')}</span></div>
     </section>
     <div class="vt">
       <div class="vt-tabs" id="vtTabs">${TABS.map(([k,l])=>`<button data-t="${k}">${l}</button>`).join('')}</div>
@@ -2345,12 +2465,18 @@ function viewVibeScript(id, tab){
       $('vtBody').innerHTML=`<div class="scr">${eps.map((x,i)=>`<div class="ep" id="ep${i}"><div class="h"><b>EP${String(i+1).padStart(2,'0')}</b><span>${esc(s.outline[i][0])}</span></div><pre>${sxHL(epTxt(i))}</pre></div>`).join('')}</div>`;
     } else if(tab==='assets'){
       const core=[W.pitch,W.core].filter(x=>x&&x.trim()).join('；');
-      const items=[
+      const locCount={}; eps.forEach(e=>epMat(e).locs.forEach(l=>locCount[l]=(locCount[l]||0)+1));
+      const topLocs=Object.keys(locCount).sort((a,b)=>locCount[b]-locCount[a]).slice(0,4);
+      const items = s.cast&&s.cast.length ? [
+        ...s.cast.slice(0,6).map(c=>({fn:'role-board', label:c.role.split(/[·・\s]/)[0], name:c.name, profile:`${c.name}（${c.role}）\n${c.bio}`})),
+        ...topLocs.map(l=>({fn:'scene-board', label:l, name:l, sub:'场景', profile:l})),
+      ] : [
         {fn:'role-board', label:s.leads[0], name:s.name, profile:`${s.leads[0]}${s.name}。${core}`},
         {fn:'role-board', label:s.leads[1], name:s.name2, profile:`${s.leads[1]}${s.name2}，${s.name}的感情线对象。${core}`},
         {fn:'role-board', label:'对手', name:'对手', sub:`与${s.name}作对的人`, profile:`与${s.name}作对的人。${core}`},
         {fn:'scene-board', label:'主要场景', name:'主要场景', sub:W.genre, profile:[W.genre,core].filter(Boolean).join('；')},
       ];
+      if(!items.some(x=>x.fn==='scene-board')) items.push({fn:'scene-board', label:'主要场景', name:'主要场景', sub:W.genre, profile:[W.genre,core].filter(Boolean).join('；')});
       const roles=items.map((x,k)=>({...x,k})).filter(x=>x.fn==='role-board'), scenes=items.map((x,k)=>({...x,k})).filter(x=>x.fn!=='role-board');
       const gOf=x=>x.label.startsWith('女')?'female':x.label.startsWith('男')?'male':s.g;
       const card=x=>`<button class="vp" data-as="${x.k}"><span class="vp-img"><span class="vtile" style="--c:${SX_COLORS[x.k%10]}">${ico(x.fn==='role-board'?(gOf(x)==='female'?'female':'user'):'mount')}</span>
@@ -2423,7 +2549,7 @@ function viewVibeScript(id, tab){
       '2. 前后文：人名、身份、伏笔、设定是否前后一致；改一处要同步改哪些地方。',
       '3. 节奏与钩子：每集开头 3 秒是否抓人、结尾是否留钩子，冲突是否成立。',
       '4. 对白：是否口语、有没有说明腔，人物说话是否有辨识度。',
-      '先给总评（三句以内），再按集列出问题与改法，最后输出修改后的完整剧本。','',sxScriptText(s)].join('\n');
+      '先给总评（三句以内），再按集列出问题与改法，最后输出修改后的完整剧本。','',`《${w.title}》`,'',eps.join('\n\n---\n\n')].join('\n');
     copyText(review, e.currentTarget); if(site) window.open(site,'_blank','noopener'); toast(site?`已复制，到 ${ai} 贴上就开始审稿`:'已复制审稿提示词'); };
   draw();
 }
@@ -2757,7 +2883,7 @@ function viewAssembler(ep){
   const v=document.getElementById('view');
   let epTxt='', head=`<h2>6.0 视频专用提示词 · 组装器</h2><span class="meta">分镜表 → 每集 4~6 段长视频提示词（生产在用）</span>`;
   const ew = ep && (store('works')||[]).find(x=>x.id===ep.wid);
-  if(ew){ const sx=vibeSx(ew), eps=sxScript(sx), i=Math.min(ep.i, eps.length-1);
+  if(ew){ const {s:sx, eps}=vibeData(ew), i=Math.min(ep.i, eps.length-1);
     epTxt=eps[i]; head=`<h2>第 ${i+1} 集：${esc(sx.outline[i][0])}</h2><span class="meta">《${esc(ew.title)}》· 分镜图编辑</span>`; }
   v.innerHTML=`${backBar(ew?`#/script/v/${ew.id}/board`:null)}<div class="sec-head" style="margin-top:56px">${head}</div>
   <div class="asm">
