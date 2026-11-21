@@ -2155,9 +2155,9 @@ function viewScriptSimple(){
     ${partnerBanner()}
     </div>
     <section class="orbit-sec" aria-labelledby="orbitTitle">
-      <div class="orbit-head"><div><h2 id="orbitTitle">北斗七星排行 <span class="tag int">测试</span></h2><p>七颗星对应七个主题或角色，星体大小代表热度指数</p></div><span class="sp"></span><div class="dipper-tabs" id="dipperTabs"><button class="on" data-board="hot">热点七星</button><button data-board="role">角色七星</button></div><div class="orbit-ranges" id="orbitRanges"><button data-r="1h">1 小时</button><button class="on" data-r="24h">24 小时</button><button data-r="7d">7 天</button></div></div>
-      <div class="orbit-layout"><div class="orbit-stage" id="orbitStage" aria-label="北斗七星热点与角色排行"><span class="orbit-stars"></span><svg class="dipper-svg" viewBox="0 0 100 100" aria-hidden="true"><polyline points="18,68 30,55 43,58 54,43 67,49 78,35 89,24"/><line x1="18" y1="68" x2="54" y2="43"/></svg></div><div class="orbit-side" id="orbitRanks"></div></div>
-      <p class="orbit-note">模拟测试数据 · 点击热点星进入对应主题；点击角色星进入角色库，亦可直接用该角色开剧本。</p>
+      <div class="orbit-head"><div><h2 id="orbitTitle">剧本热点七星 <span class="tag int">测试</span></h2><p id="orbitSub">七颗星对应七个剧本主题，星体大小代表热度指数</p></div><span class="sp"></span><div class="orbit-ranges" id="orbitRanges"><button data-r="1h">1 小时</button><button class="on" data-r="24h">24 小时</button><button data-r="7d">7 天</button></div></div>
+      <div class="orbit-layout"><div class="orbit-stage" id="orbitStage" aria-label="七星行星动态排行"><span class="orbit-stars"></span><i class="orbit-line o1"></i><i class="orbit-line o2"></i><i class="orbit-line o3"></i><button class="orbit-core" id="orbitCore"></button></div><div class="orbit-side" id="orbitRanks"></div></div>
+      <p class="orbit-note">模拟测试数据 · 排行内容跟随上方“角色库 / 创作平台”切换；动态只表达浏览层级，不代表实时上涨。</p>
     </section>
     <section class="lib" id="mLib"></section>
     <div id="mCreate">
@@ -2187,14 +2187,17 @@ function viewScriptSimple(){
   function openRole(d,write){const pick={g:d[1],idx:d[2],name:'',title:'',q:''};store('sxPick',pick);store('homeMode',write?'create':'lib');store('libNav',{lv:'role',g:d[1],i:d[2]});viewScriptSimple();requestAnimationFrame(()=>document.getElementById(write?'roles':'mLib')?.scrollIntoView({behavior:'smooth',block:'start'}));}
   function drawOrbit(){
     const data=dipperBoard==='hot'?hotData():roleData(),stage=$('orbitStage'),ranks=$('orbitRanks');
-    stage.querySelectorAll('.dipper-star').forEach(x=>x.remove());
-    data.forEach((d,i)=>{const b=document.createElement('button'),heat=dipperBoard==='hot'?d[2]:d[3];b.className=`dipper-star s${i+1}`;b.style.cssText=`--size:${Math.round(48+heat*.28)}px;--c:${starColors[i]}`;b.setAttribute('aria-label',`第 ${i+1} 名 ${d[0]}，热度 ${heat}`);b.innerHTML=`<b>${d[0]}</b><span>${heat}</span>`;b.onclick=()=>dipperBoard==='hot'?openHot(d):openRole(d,false);stage.append(b);});
+    stage.querySelectorAll('.planet-path').forEach(x=>x.remove());
+    $('orbitTitle').childNodes[0].nodeValue=dipperBoard==='hot'?'剧本热点七星 ':'角色库七星 ';
+    $('orbitSub').textContent=dipperBoard==='hot'?'七颗星对应七个剧本主题，星体大小代表热度指数':'七颗星对应七类热门角色，点击即可进入角色库';
+    const top=data[0],topHeat=dipperBoard==='hot'?top[2]:top[3];$('orbitCore').innerHTML=`<span><b>${top[0]}</b><strong>${topHeat}</strong><small>热度第一</small></span>`;$('orbitCore').onclick=()=>dipperBoard==='hot'?openHot(top):openRole(top,false);
+    data.slice(1).forEach((d,j)=>{const i=j+1,heat=dipperBoard==='hot'?d[2]:d[3],path=document.createElement('span'),ring=j<1?1:j<3?2:3;path.className=`planet-path ring${ring}`;path.style.cssText=`--angle:${[25,145,255,70,190,310][j]}deg;--dur:${[24,32,28,38,34,42][j]}s`;path.innerHTML=`<button class="planet" style="--size:${Math.round(48+heat*.32)}px;--color:${starColors[i]}" aria-label="第 ${i+1} 名 ${d[0]}，热度 ${heat}"><b>${d[0]}</b><span>${heat}</span></button>`;path.querySelector('button').onclick=()=>dipperBoard==='hot'?openHot(d):openRole(d,false);stage.append(path);});
     ranks.innerHTML=`<h3>TOP 7 ${dipperBoard==='hot'?'热点主题':'角色类型'}</h3>${data.map((d,i)=>{const heat=dipperBoard==='hot'?d[2]:d[3],share=dipperBoard==='hot'?d[3]:d[4],trend=dipperBoard==='hot'?d[4]:d[5];return `<div class="rank-row" data-star="${i}" style="--c:${starColors[i]}"><i>${String(i+1).padStart(2,'0')}</i><span><b>${d[0]}</b><small>声量 ${share}% · 趋势 ${trend}</small></span><strong>${heat}</strong>${dipperBoard==='role'?`<span class="rank-actions"><button data-view="${i}">角色库</button><button data-write="${i}">开剧本</button></span>`:''}</div>`}).join('')}`;
     ranks.querySelectorAll('[data-star]').forEach(row=>row.onclick=e=>{if(e.target.closest('.rank-actions'))return;const d=data[+row.dataset.star];dipperBoard==='hot'?openHot(d):openRole(d,false)});
     ranks.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>openRole(data[+b.dataset.view],false));ranks.querySelectorAll('[data-write]').forEach(b=>b.onclick=()=>openRole(data[+b.dataset.write],true));
+    stage.onmouseenter=()=>stage.querySelectorAll('.planet-path').forEach(x=>x.classList.add('paused'));stage.onmouseleave=()=>stage.querySelectorAll('.planet-path').forEach(x=>x.classList.remove('paused'));
   }
   document.querySelectorAll('#orbitRanges button').forEach(b=>b.onclick=()=>{orbitRange=b.dataset.r;document.querySelectorAll('#orbitRanges button').forEach(x=>x.classList.toggle('on',x===b));drawOrbit();});
-  document.querySelectorAll('#dipperTabs button').forEach(b=>b.onclick=()=>{dipperBoard=b.dataset.board;document.querySelectorAll('#dipperTabs button').forEach(x=>x.classList.toggle('on',x===b));$('orbitRanges').style.visibility=dipperBoard==='hot'?'visible':'hidden';drawOrbit();});
   drawOrbit();
   const list=()=>DATA.roles[st.g];
   function save(){ store('sxPick',st); }
@@ -2255,6 +2258,7 @@ function viewScriptSimple(){
   function setMode(m){
     mode=m; store('homeMode',m);
     document.querySelectorAll('#modeSeg button').forEach(b=>b.classList.toggle('on',b.dataset.m===m));
+    dipperBoard=m==='lib'?'role':'hot'; $('orbitRanges').style.visibility=dipperBoard==='hot'?'visible':'hidden'; drawOrbit();
     $('mLib').style.display = m==='lib' ? '' : 'none';
     $('mCreate').style.display = m==='create' ? '' : 'none';
     $('heroCreate').style.display = m==='create' ? '' : 'none';
