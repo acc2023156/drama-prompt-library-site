@@ -447,6 +447,17 @@ a.pill{text-decoration:none}
 .vtile svg{width:22%;height:22%;stroke:#fff;fill:none;stroke-width:1.5;opacity:.9}
 .vep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:18px}
 .vep{display:flex;gap:20px;padding:16px;border-radius:22px;background:#1b1b1e;border:1px solid var(--line)}
+.login-row{display:flex;gap:8px;width:100%;max-width:360px;margin:10px auto 0}
+.login-row input{flex:1;min-width:0;height:42px;padding:0 14px;border-radius:12px;border:1px solid var(--line-2);background:#141416;color:#fff;font-size:15px;letter-spacing:.5px}
+.login-row .bigbtn{width:auto;padding:0 20px;height:42px}
+.points-card .login-row{max-width:none;margin:0 0 8px}
+.account-head{position:relative}.acc-out{margin-left:auto;align-self:center;height:30px;padding:0 12px;border-radius:9px;background:rgba(255,255,255,.08);color:var(--text-2);font-size:12.5px}
+.adm-key{margin:0 0 18px;max-width:420px}
+.adm-table{display:grid;gap:6px;overflow-x:auto}
+.adm-r{display:grid;grid-template-columns:96px 120px 100px 70px 60px 60px 50px 110px minmax(260px,1fr);gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#1b1c20;font-size:13.5px;min-width:980px}
+.adm-h{background:transparent;color:var(--text-3);font-size:12px}
+.adm-r select,.adm-r input{height:32px;border-radius:8px;border:1px solid var(--line-2);background:#141416;color:#fff;padding:0 8px;font-size:13px}
+.adm-add{display:flex;gap:6px}.adm-add input[data-n]{width:76px}.adm-add input[data-note]{flex:1;min-width:0}
 .gen-prog{position:relative;display:inline-flex;align-items:center;gap:10px;margin:2px 0 14px;padding:8px 16px;border-radius:99px;background:rgba(139,69,255,.14);color:#d9c8ff;font-size:14px;overflow:hidden}
 .gen-prog .gw-spin{width:16px;height:16px;border-width:2px}
 .gen-prog i{position:absolute;left:0;bottom:0;height:2px;width:var(--p);background:var(--brand);transition:width .4s}
@@ -1034,7 +1045,7 @@ const inFolder = k => ENTRIES.filter(e => e.folder === k || e.folder.startsWith(
 
 /* ---------- helpers ---------- */
 const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-function store(k, v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem('pl.'+k)); localStorage.setItem('pl.'+k, JSON.stringify(v)); }catch(e){ return null } }
+function store(k, v){ try{ if(v===undefined) return JSON.parse(localStorage.getItem('pl.'+k)); localStorage.setItem('pl.'+k, JSON.stringify(v)); if(k==='works' && window.cloudPush) cloudPush(); }catch(e){ return null } }
 function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast.t);toast.t=setTimeout(()=>el.classList.remove('show'),1400)}
 async function copyText(text, btn){
   try{ await navigator.clipboard.writeText(text) }
@@ -1738,7 +1749,7 @@ function bindWcard(root, W, save, close){
   root.querySelectorAll('.ck[data-h]').forEach(c=>c.onclick=()=>{
     const h=c.dataset.h; W.hooks=W.hooks.includes(h)?W.hooks.filter(x=>x!==h):[...W.hooks,h]; c.classList.toggle('on'); refresh();
   });
-  q('.wc-go').onclick=()=>{ W.ai=(store('chat')||{}).ai||W.ai; const it=wzSaveWork(W,'vibe'); const {dup,...keep}=W; save(keep); location.hash='#/script/v/'+it.id; };
+  q('.wc-go').onclick=()=>{ if(!authGet()){ openLogin(); toast('输入手机号就能开写'); return; } W.ai=(store('chat')||{}).ai||W.ai; const it=wzSaveWork(W,'vibe'); const {dup,...keep}=W; save(keep); location.hash='#/script/v/'+it.id; };
   q('[data-x]').onclick=close;
   refresh();
 }
@@ -2480,9 +2491,14 @@ const YQ_HEAT={
 const heatOf=W=>HEAT.includes(W.heat)?W.heat:'点到为止';
 const YQ_HOT='gemma4-31b-heretic';
 async function yqChat(model, content, max_tokens){
-  const r=await fetch(TJ_API+'/yq/v1/chat/completions',{method:'POST', headers:{'X-Tianji-Code':tjCode()||'','Content-Type':'application/json'},
+  const A=authGet();
+  const r=await fetch(TJ_API+'/yq/v1/chat/completions',{method:'POST', headers:{'X-Tianji-Code':tjCode()||'','Content-Type':'application/json',...(A?{'Authorization':'Bearer '+A.token}:{})},
     body:JSON.stringify({model, messages:[{role:'user',content}], max_tokens:max_tokens||3000, temperature:0.8})});
-  const j=await r.json().catch(()=>({})); if(!r.ok) throw new Error((j.error&&(j.error.message||j.error))||('HTTP '+r.status));
+  const left=r.headers.get('X-Points'); if(left!==null&&A){ A.user.points=+left; authSet(A); }
+  const j=await r.json().catch(()=>({}));
+  if(r.status===401){ authSet(null); openLogin(); throw new Error('请先登录'); }
+  if(r.status===402){ toast('今天的积分用完了，明天 0 点补满'); throw new Error('积分不足'); }
+  if(!r.ok) throw new Error((j.error&&(j.error.message||j.error))||('HTTP '+r.status));
   return String(((j.choices||[])[0]||{}).message?.content||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
 }
 function yqPlanPrompt(W, n){
@@ -2581,6 +2597,14 @@ function genWait(v, w, tab){
     }catch(e){}
   },1000);
 }
+function loginGate(v, w, tab){
+  drawNav({view:'tool', tool:'script', sub:'vibe', wid:w.id, vibe:{id:w.id, title:w.title, tab}});
+  v.innerHTML=`${backBar('#/script')}
+    <section class="done-hero"><h1>《${esc(w.title)}》</h1></section>
+    <div class="gen-wait"><b>输入手机号就能开写</b><form class="login-row" id="gateForm"><input id="gatePhone" inputmode="numeric" maxlength="11" placeholder="手机号 8–11 码"><button class="bigbtn" type="submit">${ico('sparkle')}开写</button></form></div>`;
+  const f=document.getElementById('gateForm'), ip=document.getElementById('gatePhone'); ip.focus();
+  f.onsubmit=async e=>{ e.preventDefault(); if(await doLogin(ip.value)) viewVibeScript(w.id, tab); };
+}
 function genFail(v, w, tab){
   drawNav({view:'tool', tool:'script', sub:'vibe', wid:w.id, vibe:{id:w.id, title:w.title, tab}});
   v.innerHTML=`${backBar('#/script')}
@@ -2596,6 +2620,7 @@ function viewVibeScript(id, tab){
   if(!w.vname || !w.seed){ const s0=vibeSx(w); w.vname=s0.name; w.seed=w.seed||Math.floor(Math.random()*1e9)+1; store('works',list); }
   tab = tab || store('vibeTab') || 'outline';
   if(w.gen && w.gen.req && w.gen.status!=='off' && JSON.stringify(w.gen.req)!==JSON.stringify(genReq(w.W))) w.gen=null;
+  if(w.gen==null && !authGet()){ return loginGate(v, w, tab); }
   if(w.gen==null){ startYq(w); return viewVibeScript(id, tab); }
   if(w.gen && /starting|queued|running|outline/.test(w.gen.status)) return genWait(v, w, tab);
   if(w.gen && w.gen.status==='error' && !(w.gen.engine==='yq'&&w.gen.data)) return genFail(v, w, tab);
@@ -2881,13 +2906,101 @@ function setPanel(open){
 }
 document.getElementById('psOpen').onclick = () => setPanel(true);
 
+// 帐号：手机号登录（不验证）、作品上云、积分
+function authGet(){ return store('auth'); }
+function authSet(a){ if(a) store('auth',a); else localStorage.removeItem('pl.auth'); drawAccount(); }
+const maskPhone=p=>p&&p.length>6?p.slice(0,3)+'****'+p.slice(-3):(p||'');
+const ROLE_NAME={free:'免费',member:'会员',tester:'内部测试'};
+async function api(path, opt){
+  const A=authGet(), o=opt||{};
+  const r=await fetch(TJ_API+path,{method:o.method||'GET', headers:{'Content-Type':'application/json',...(A?{'Authorization':'Bearer '+A.token}:{}),...(o.headers||{})}, body:o.body});
+  const j=await r.json().catch(()=>({})); if(r.status===401&&A&&!o.noLogout) authSet(null);
+  if(!r.ok) throw Object.assign(new Error(j.error||('HTTP '+r.status)),{status:r.status}); return j;
+}
+async function doLogin(phone){
+  const d=String(phone||'').replace(/\D/g,'');
+  if(d.length<8||d.length>11){ toast('请输入 8–11 码手机号'); return false; }
+  try{
+    const j=await api('/auth/login',{method:'POST', body:JSON.stringify({phone:d})});
+    authSet({token:j.token, user:j.user}); toast('已登录'); await cloudPull(); return true;
+  }catch(e){ toast(e.message||'登录失败'); return false; }
+}
+let cloudHash={}, cloudTimer=null;
+const workHash=w=>{ const t=JSON.stringify(w); let h=0; for(let i=0;i<t.length;i++) h=(h*31+t.charCodeAt(i))|0; return h+':'+t.length; };
+async function cloudPull(){
+  if(!authGet()) return;
+  try{
+    const j=await api('/works'), local=(JSON.parse(localStorage.getItem('pl.works'))||[]), byId=Object.fromEntries(local.map(w=>[w.id,w]));
+    for(const r of j.works){ const l=byId[r.id]; if(!l || (r.data.time||0)>(l.time||0)) byId[r.id]=r.data; }
+    const merged=Object.values(byId).sort((a,b)=>(b.time||0)-(a.time||0));
+    cloudHash=Object.fromEntries(j.works.map(r=>[r.id,workHash(r.data)]));
+    localStorage.setItem('pl.works', JSON.stringify(merged)); cloudPush(true);
+    if(/^#\/(script|$)/.test(location.hash)||location.hash==='#/'||!location.hash) dispatchEvent(new HashChangeEvent('hashchange'));
+  }catch(e){}
+}
+function cloudPush(now){
+  if(!authGet()) return; clearTimeout(cloudTimer);
+  cloudTimer=setTimeout(async()=>{
+    const list=JSON.parse(localStorage.getItem('pl.works'))||[];
+    for(const w of list){ const hsh=workHash(w); if(cloudHash[w.id]===hsh) continue;
+      try{ await api('/works/'+encodeURIComponent(w.id),{method:'POST', body:JSON.stringify(w)}); cloudHash[w.id]=hsh; }catch(e){ break; } }
+  }, now?50:1500);
+}
+window.cloudPush=cloudPush;
+function openLogin(){ setAccount(true); setTimeout(()=>document.getElementById('accPhone')?.focus(),50); }
+function drawAccount(){
+  const A=authGet(), u=A&&A.user, pts=u?(u.points===null?'∞':u.points):'登录';
+  document.querySelector('.account-trigger .points-number').textContent=pts;
+  const head=document.querySelector('.account-head'), card=document.querySelector('.points-card');
+  if(!u){
+    head.innerHTML=`<span class="account-avatar">天</span><div><div class="account-name">登录天玑</div><div class="account-tier">换装置也能接着写</div></div>`;
+    card.innerHTML=`<form class="login-row" id="accForm"><input id="accPhone" inputmode="numeric" maxlength="11" placeholder="手机号 8–11 码"><button class="upgrade" type="submit">登录</button></form><div class="points-row"><span>新号送 ${50} 积分，每天补到 30</span></div>`;
+    document.getElementById('accForm').onsubmit=async e=>{ e.preventDefault(); await doLogin(document.getElementById('accPhone').value); };
+  } else {
+    head.innerHTML=`<span class="account-avatar">天</span><div><div class="account-name">${esc(u.uid)}</div><div class="account-tier">${ROLE_NAME[u.role]||u.role} · ${esc(maskPhone(u.phone))}</div></div><button class="acc-out" id="accOut" title="登出">登出</button>`;
+    card.innerHTML=`<div class="points-balance">积分余额：${u.points===null?'不限':u.points}</div><div class="points-row"><span>${u.cap?`每天 0 点补到 ${u.cap} · 写一集 1 点`:'内部测试不扣点'}</span><button class="upgrade" type="button" id="accUp">升级会员</button></div>`;
+    document.getElementById('accOut').onclick=()=>{ authSet(null); cloudHash={}; toast('已登出'); };
+    document.getElementById('accUp').onclick=()=>{ setAccount(false); location.hash='#/membership'; };
+  }
+}
+async function refreshMe(){ const A=authGet(); if(!A) return; try{ const j=await api('/me'); A.user=j.user; authSet(A); }catch(e){} }
+
+/* 管理后台：会员 UID、积分、手动加点 */
+function viewAdmin(){
+  const v=document.getElementById('view'), key=()=>sessionStorage.getItem('tjAdmin')||'';
+  const A=(path,o)=>api(path,{...(o||{}), noLogout:true, headers:{'X-Admin-Key':key()}});
+  v.innerHTML=`${backBar('#/')}<div class="sec-head" style="margin-top:56px"><h2>会员后台</h2><span class="meta" id="admMeta"></span></div>
+    <form class="login-row adm-key" id="admKey"><input type="password" id="admKeyIn" placeholder="管理员密码" value="${esc(key())}"><button class="btn-o" type="submit">进入</button></form>
+    <div id="admBody"></div>`;
+  const $=id=>document.getElementById(id);
+  const load=async()=>{
+    try{
+      const j=await A('/admin/users'); const fmt=t=>t?new Date(t).toLocaleString('zh-CN',{hour12:false}).slice(2,16):'';
+      $('admMeta').textContent=`${j.users.length} 位 · ${j.day}`;
+      $('admBody').innerHTML=`<div class="adm-table"><div class="adm-r adm-h"><span>UID</span><span>手机</span><span>身份</span><span>积分</span><span>今日用</span><span>累计用</span><span>作品</span><span>最后登录</span><span>手动加点</span></div>
+        ${j.users.map(u=>`<div class="adm-r" data-uid="${esc(u.uid)}"><span><b>${esc(u.uid)}</b></span><span>${esc(maskPhone(u.phone))}</span>
+          <span><select data-role>${Object.entries(ROLE_NAME).map(([k,l])=>`<option value="${k}" ${u.role===k?'selected':''}>${l}</option>`).join('')}</select></span>
+          <span><b>${u.role==='tester'?'不限':u.points}</b></span><span>${u.used_today||0}</span><span>${u.used_total||0}</span><span>${u.works}</span><span>${fmt(u.last_login)}</span>
+          <span class="adm-add"><input type="number" data-n placeholder="+点数"><input data-note placeholder="备注"><button class="btn-o" data-add>加点</button></span></div>`).join('')}</div>`;
+      $('admBody').querySelectorAll('.adm-r[data-uid]').forEach(row=>{
+        const uid=row.dataset.uid;
+        row.querySelector('[data-add]').onclick=async()=>{ const n=+row.querySelector('[data-n]').value; if(!n) return toast('输入点数');
+          try{ await A('/admin/points',{method:'POST', body:JSON.stringify({uid, delta:n, note:row.querySelector('[data-note]').value})}); toast(`${uid} ${n>0?'+':''}${n}`); load(); }catch(e){ toast(e.message); } };
+        row.querySelector('[data-role]').onchange=async e=>{ try{ await A('/admin/role',{method:'POST', body:JSON.stringify({uid, role:e.target.value})}); toast('已改身份'); load(); }catch(err){ toast(err.message); } };
+      });
+    }catch(e){ $('admBody').innerHTML=`<div class="empty">${e.status===403?'密码不对':'读取失败'}</div>`; }
+  };
+  $('admKey').onsubmit=e=>{ e.preventDefault(); sessionStorage.setItem('tjAdmin',$('admKeyIn').value.trim()); load(); };
+  if(key()) load();
+}
+
 // 右上角账户、积分与空间面板
 const account = document.getElementById('account');
 const accountTrigger = document.getElementById('accountTrigger');
 function setAccount(open){ account.classList.toggle('open',open); accountTrigger.setAttribute('aria-expanded',String(open)); }
 accountTrigger.onclick = e => { e.stopPropagation(); setAccount(!account.classList.contains('open')); };
 account.querySelector('.account-panel').onclick = e => e.stopPropagation();
-account.querySelector('.upgrade').onclick = () => { setAccount(false); location.hash='#/membership'; };
+drawAccount(); refreshMe(); cloudPull();
 document.addEventListener('click',()=>setAccount(false));
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') setAccount(false); });
 
@@ -3131,7 +3244,7 @@ function parse(){
   if(h==='membership') return {view:'membership'};
   if(h.startsWith('e/')) {const e=byId[h.slice(2)];return {view:'entry',id:h.slice(2),folder:e&&e.folder}}
   if(h.startsWith('f/')) return {view:'list',folder:h.slice(2)};
-  if(h==='assembler'||h==='changelog') return {view:h};
+  if(h==='assembler'||h==='changelog'||h==='admin') return {view:h};
   if(h.startsWith('assembler?ep=')){ const [wid,i]=h.slice(13).split('.'), w=(store('works')||[]).find(x=>x.id===wid);
     return w ? {view:'assembler', ep:{wid, i:+i}, vibe:{id:wid, title:w.title, tab:'board'}} : {view:'assembler'}; }
   if(h.startsWith('script/s/')) {const [id,q]=h.slice(9).split('?');return {view:'tool',tool:'script',sub:'result',sid:id,fresh:q==='new=1'}}
@@ -3151,6 +3264,7 @@ function route(){
   document.querySelector('.tb-logo').classList.toggle('on', r.view==='start');
   if(r.view==='start') viewScriptSimple();
   else if(r.view==='membership') viewMembership();
+  else if(r.view==='admin') viewAdmin();
   else if(r.view==='entry') viewEntry(r.id);
   else if(r.view==='assembler') viewAssembler(r.ep);
   else if(r.view==='tool' && r.tool==='assets') r.fn ? viewAssetEditor(r.fn, r.idx) : viewAssets();
