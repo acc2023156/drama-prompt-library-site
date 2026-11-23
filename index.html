@@ -3035,7 +3035,7 @@ function drawAccount(){
   const head=document.querySelector('.account-head'), card=document.querySelector('.points-card');
   if(!u){
     head.innerHTML=`<span class="account-avatar">天</span><div><div class="account-name">登录天玑</div><div class="account-tier">换装置也能接着写</div></div>`;
-    card.innerHTML=`<form class="login-row" id="accForm"><input id="accPhone" inputmode="numeric" maxlength="11" placeholder="手机号 8–11 码"><button class="upgrade" type="submit">登录</button></form><div class="points-row"><span>新号送 ${50} 积分，每天补到 30</span></div>`;
+    card.innerHTML=`<form class="login-row" id="accForm"><input id="accPhone" inputmode="numeric" maxlength="11" placeholder="手机号 8–11 码"><button class="upgrade" type="submit">登录</button></form><div class="points-row"><span>新号送 ${50} 积分，每天补到 40</span></div>`;
     document.getElementById('accForm').onsubmit=async e=>{ e.preventDefault(); await doLogin(document.getElementById('accPhone').value); };
   } else {
     head.innerHTML=`<span class="account-avatar">天</span><div><div class="account-name">${esc(u.uid)}</div><div class="account-tier">${ROLE_NAME[u.role]||u.role} · ${esc(maskPhone(u.phone))}</div></div><button class="acc-out" id="accOut" title="登出">登出</button>`;
