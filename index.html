@@ -387,6 +387,18 @@ a.pill{text-decoration:none}
 .wc-story:focus{border-color:rgba(139,69,255,.6)}
 .cpop .qx.heat{width:auto;padding:0 5px;border-radius:9px;font-size:9px;letter-spacing:-1px}
 .cpop .qx.h1{background:rgba(255,95,162,.25);color:#ffc2dc}.cpop .qx.h2{background:rgba(255,77,109,.35);color:#ffd0d8}
+.heat-lead{font-style:normal;font-size:11px;letter-spacing:-1px;padding:1px 5px;border-radius:8px;background:rgba(255,255,255,.1);color:#d8c9ff}
+.heat-lead.h1{background:rgba(255,95,162,.25);color:#ffc2dc}.heat-lead.h2{background:rgba(255,61,90,.35);color:#ffd0d8}
+.cfoot .think-w{margin-left:auto}
+.wc-foot{display:flex;align-items:center;gap:10px}.wc-foot .wc-go{flex:1}
+.think-pop.up{bottom:calc(100% + 8px);top:auto;left:0;right:auto}.cfoot .think-w~.cmic{margin-left:8px}
+.cthink{background:#26262a;border-radius:999px;padding:0 14px;color:var(--text-2)}.cthink svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}
+.think-pop{width:260px;padding:16px 18px 12px;right:0;left:auto}
+.tk-h{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-bottom:12px}.tk-h b{font-size:18px}.tk-h span{color:var(--text-3);font-size:12.5px}
+.tk-r{width:100%;-webkit-appearance:none;appearance:none;height:26px;border-radius:99px;background:linear-gradient(90deg,var(--brand) var(--p),#2c2c31 var(--p));outline:none;cursor:pointer}
+.tk-r::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.tk-r::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#fff;border:0}
+.tk-l{display:flex;justify-content:space-between;margin-top:6px;color:var(--text-3);font-size:12px;padding:0 4px}
 .heat-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:#8b8b93}.heat-dot.h1{background:#ff5fa2}.heat-dot.h2{background:#ff3d5a;box-shadow:0 0 6px #ff3d5a}
 .cpop .qx{display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:rgba(139,69,255,.25);color:#d9c8ff;font:600 11px Inter,var(--font);font-style:normal}
 .wc-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
@@ -1511,6 +1523,7 @@ function chatHtml(){
       <div class="cfoot">
         <div class="cpop-w"><button class="cbtn" id="cStyle">${ico('palette')}<span>风格</span></button><div class="cpop" id="cStylePop"></div></div>
         <div class="cpop-w"><button class="cbtn" id="cRatio"><i class="rb"></i><span>比例</span></button><div class="cpop" id="cRatioPop"></div></div>
+        <div class="cpop-w think-w"><button class="cbtn cthink" id="cThink"><span>思考强度</span>${ico('chev')}</button><div class="cpop think-pop" id="cThinkPop"></div></div>
         ${SpeechRec?`<button class="cmic" id="cMic" title="用说的">${ico('mic')}</button>`:''}
         <button class="csend" id="cSend">${ico('arrowUp')}</button>
       </div>
@@ -1613,6 +1626,18 @@ function bindChat(){
   }
   $('cStyle').onclick=e=>{e.stopPropagation(); const o=$('cStylePop').classList.contains('open'); closePops(); if(!o) $('cStylePop').classList.add('open');};
   $('cRatio').onclick=e=>{e.stopPropagation(); const o=$('cRatioPop').classList.contains('open'); closePops(); if(!o) $('cRatioPop').classList.add('open');};
+  /* 思考强度：轻／中／重，滑杆选；套用到作品卡与开写 */
+  const drawThink=()=>{
+    const d=depthOf(C), k=DEPTH.indexOf(d);
+    $('cThink').querySelector('span').textContent=d.slice(0,1)+'度思考';
+    $('cThinkPop').innerHTML=`<div class="tk-h"><b>${d.slice(0,1)}</b><span>${DEPTH_TIME[d]}</span></div>
+      <input type="range" class="tk-r" id="cThinkR" min="0" max="2" step="1" value="${k}" style="--p:${k*50}%">
+      <div class="tk-l"><span>轻</span><span>中</span><span>重</span></div>`;
+    $('cThinkPop').onclick=e=>e.stopPropagation();
+    $('cThinkR').oninput=e=>{ C.depth=DEPTH[+e.target.value]; save(); const vc=store('vibeCard'); if(vc){ vc.depth=C.depth; store('vibeCard',vc); } drawThink(); };
+  };
+  drawThink();
+  $('cThink').onclick=e=>{e.stopPropagation(); const o=$('cThinkPop').classList.contains('open'); closePops(); if(!o) $('cThinkPop').classList.add('open');};
   document.addEventListener('click', closePops);
   if($('cMic')) $('cMic').onclick=()=>{
     let ta=$('cbody').querySelector('textarea');
@@ -1623,7 +1648,7 @@ function bindChat(){
     if(!ok()) return;
     if(C.tab==='auto'){
       const pitch=C.pitch.trim(), g=wzGuess(pitch);
-      store('vibeCard', Object.assign({}, WZ_DEF, {mode:'auto', pitch, ai:C.ai, style:C.style, ratio:C.ratio, mins:1}, g, {hooks:g.hooks}));
+      store('vibeCard', Object.assign({}, WZ_DEF, {mode:'auto', pitch, ai:C.ai, style:C.style, ratio:C.ratio, mins:1, depth:depthOf(C)}, g, {hooks:g.hooks}));
       drawBody();
       $('chat').querySelector('.cbox').scrollIntoView({behavior:'smooth', block:'start'});
       return;
@@ -1653,7 +1678,7 @@ function wcardOpts(W){
     qxRole:{items:Q.role.map((v,i)=>({v,l:v,ic:`<i class="qx">${i+1}</i>`})), lead:()=>ico('user'), label:v=>v||'角色'},
     qxMode:{items:Q.mode.map((v,i)=>({v,l:v,ic:`<i class="qx">${i+1}</i>`})), lead:()=>ico('sparkle'), label:v=>v||'模式'},
     depth:{items:DEPTH.map((v,i)=>({v,l:`${v}思考 · ${DEPTH_TIME[v]}`,ic:`<i class="qx">${'◆'.repeat(i+1)}</i>`})), lead:()=>ico('sparkle'), label:v=>depthOf({depth:v})+'思考'},
-    heat:{items:HEAT.map((v,i)=>({v,l:v,ic:`<i class="qx heat h${i}">${'♥'.repeat(i+1)}</i>`})), lead:v=>`<i class="heat-dot h${HEAT.indexOf(heatOf({heat:v}))}"></i>`, label:v=>heatOf({heat:v})},
+    heat:{items:HEAT.map((v,i)=>({v,l:v,ic:`<i class="qx heat h${i}">${'♥'.repeat(i+1)}</i>`})), lead:v=>{const i=HEAT.indexOf(heatOf({heat:v}));return `<i class="heat-lead h${i}">${'♥'.repeat(i+1)}</i>`;}, label:v=>heatOf({heat:v})},
     style:{items:st.map(x=>({v:x.n,l:x.n,ic:`<i style="background:${x.g}"></i>`})), lead:v=>ico('palette'), label:v=>v&&v!=='无'?v:'风格'},
     ratio:{items:RATIOS.map(r=>({v:r,l:r,ic:rbIcon(r)})), lead:v=>rbIcon(v,16), label:v=>v||'9:16'},
     genre:{items:WZ_OPT.genre.map(v=>({v,l:v}))},
@@ -1708,7 +1733,7 @@ function wcardHtml(W){
     <button class="wc-x" data-x title="回到输入">${ico('x')}</button>
     <div class="wc-title">《<input data-c="title" placeholder="AI 帮你取剧名" value="${esc(W.title)}">》<button class="wc-dice" data-dice title="帮我取一个">${ico('dice')}</button></div>
     <textarea class="wc-story" data-c="pitch" rows="2" placeholder="说一句你的故事">${esc(W.pitch)}</textarea>
-    <div class="wc-pills">${['style','ratio','aud','qxRole','qxMode','heat','depth','pair','eps','mins'].map(dd).join('')}</div>
+    <div class="wc-pills">${['style','ratio','aud','qxRole','qxMode','heat','pair','eps','mins'].map(dd).join('')}</div>
     <div class="chips wc-hooks">${WZ_OPT.hooks.map(h=>`<span class="ck ${W.hooks.includes(h)?'on':''}" data-h="${h}">${h}</span>`).join('')}</div>
     <details class="wc-idea" ${W.core.trim()?'open':''}>
       <summary class="wc-idea-h">${ico('sparkle')}你的独家点子，让这部与众不同${ico('chev')}</summary>
@@ -1716,7 +1741,8 @@ function wcardHtml(W){
       <div class="wc-say"><textarea class="wc-story" data-c="core" rows="2" placeholder="想到什么写什么，没想好也没关系">${esc(W.core)}</textarea>
         ${SpeechRec?`<button class="wc-mic" data-mic title="用说的">${ico('mic')}</button>`:''}</div>
     </details>
-    <button class="bigbtn wc-go">${ico('sparkle')}${W.id?'继续写':'开写'}</button>
+    <div class="wc-foot"><div class="cpop-w think-w"><button class="cbtn cthink" data-think><span>${depthOf(W).slice(0,1)}度思考</span>${ico('chev')}</button><div class="cpop think-pop up" data-thinkpop></div></div>
+    <button class="bigbtn wc-go">${ico('sparkle')}${W.id?'继续写':'开写'}</button></div>
   </div>`;
 }
 function bindWcard(root, W, save, close){
@@ -1761,6 +1787,13 @@ function bindWcard(root, W, save, close){
   });
   q('.wc-go').onclick=()=>{ if(!authGet()){ openLogin(); toast('输入手机号就能开写'); return; } W.ai=(store('chat')||{}).ai||W.ai; const it=wzSaveWork(W,'vibe'); const {dup,...keep}=W; save(keep); location.hash='#/script/v/'+it.id; };
   q('[data-x]').onclick=close;
+  { const tb=q('[data-think]'), tp=q('[data-thinkpop]');
+    const drawT=()=>{ const d=depthOf(W), k=DEPTH.indexOf(d); tb.querySelector('span').textContent=d.slice(0,1)+'度思考';
+      tp.innerHTML=`<div class="tk-h"><b>${d.slice(0,1)}</b><span>${DEPTH_TIME[d]}</span></div><input type="range" class="tk-r" min="0" max="2" step="1" value="${k}" style="--p:${k*50}%"><div class="tk-l"><span>轻</span><span>中</span><span>重</span></div>`;
+      tp.querySelector('input').oninput=e=>{ W.depth=DEPTH[+e.target.value]; const C=store('chat')||{}; C.depth=W.depth; store('chat',C); refresh(); drawT(); }; };
+    tp.onclick=e=>e.stopPropagation();
+    tb.onclick=e=>{ e.stopPropagation(); const o=tp.classList.contains('open'); document.querySelectorAll('.cpop').forEach(p=>p.classList.remove('open')); if(!o) tp.classList.add('open'); };
+    drawT(); }
   refresh();
 }
 
@@ -2256,7 +2289,7 @@ function viewScriptSimple(){
   function openHot(d){
     const C=chatState(), pitch=(window._hotLive&&d[1]&&d[1].length>8)?d[1]:(HOT_PITCH[d[0]]||d[0]), g=wzGuess(pitch);
     store('chat',{...C, tab:'auto', pitch});
-    store('vibeCard', Object.assign({}, WZ_DEF, {mode:'auto', pitch, ai:C.ai, style:C.style, ratio:C.ratio, mins:1}, g, {hooks:g.hooks}));
+    store('vibeCard', Object.assign({}, WZ_DEF, {mode:'auto', pitch, ai:C.ai, style:C.style, ratio:C.ratio, mins:1, depth:depthOf(C)}, g, {hooks:g.hooks}));
     store('pro',true); location.hash='#/script';
   }
   function openRole(d,write){const pick={g:d[1],idx:d[2],name:'',title:'',q:''};store('sxPick',pick);store('homeMode',write?'create':'lib');store('libNav',{lv:'role',g:d[1],i:d[2]});viewScriptSimple();requestAnimationFrame(()=>document.getElementById(write?'roles':'mLib')?.scrollIntoView({behavior:'smooth',block:'start'}));}
