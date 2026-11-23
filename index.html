@@ -2432,7 +2432,7 @@ function openVm(html){
   return m;
 }
 /* 真实模型：开写 → Worker 建单 → GitHub Actions 跑整剧 → 网页轮询。没有通行码时照旧用模板草稿 */
-const TJ_API='https://tianji-api.sha-platform.workers.dev';
+const TJ_API='https://tianji-api.tianji-worker.workers.dev';
 (()=>{ try{ const k=new URLSearchParams(location.search).get('k'); if(k){ store('tjCode',k); history.replaceState(null,'',location.pathname+location.hash); } }catch(e){} })();
 const tjCode=()=>store('tjCode');
 async function tjApi(path, body){
