@@ -475,6 +475,9 @@ a.pill{text-decoration:none}
 .hw-t{font-style:normal;font-size:11.5px;padding:2px 7px;border-radius:99px;background:rgba(255,77,109,.18);color:#ffb3c0}
 .hw-bar{height:6px;border-radius:99px;background:#2a2a2f;overflow:hidden}.hw-bar s{display:block;height:100%;background:linear-gradient(90deg,#ff4d6d,#ffb547);border-radius:99px}
 .hw-row strong{text-align:right;font:600 14px Inter,var(--font)}
+.adm-stats{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px;align-items:stretch}
+.adm-stats span{display:flex;flex-direction:column;gap:2px;padding:10px 16px;border-radius:12px;background:#1b1c20;color:var(--text-3);font-size:12px;min-width:96px}
+.adm-stats span b{font:700 20px Inter,var(--font);color:#fff}.adm-stats small{flex-basis:100%;color:var(--text-3);font-size:12px}
 .adm-key{margin:0 0 18px;max-width:420px}
 .adm-table{display:grid;gap:6px;overflow-x:auto}
 .adm-r{display:grid;grid-template-columns:96px 120px 100px 70px 60px 60px 50px 110px minmax(260px,1fr);gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#1b1c20;font-size:13.5px;min-width:980px}
@@ -493,6 +496,7 @@ a.pill{text-decoration:none}
 .gen-prog{position:relative;display:inline-flex;align-items:center;gap:10px;margin:2px 0 14px;padding:8px 16px;border-radius:99px;background:rgba(139,69,255,.14);color:#d9c8ff;font-size:14px;overflow:hidden}
 .gen-prog .gw-spin{width:16px;height:16px;border-width:2px}
 .gen-prog i{position:absolute;left:0;bottom:0;height:2px;width:var(--p);background:var(--brand);transition:width .4s}
+.gen-prog.busy{background:rgba(240,154,62,.14);color:#ffd29a}
 .gen-prog.err{background:rgba(255,93,108,.12);color:#ffb3bb}
 .gen-prog .btn-o{height:30px;padding:0 12px}
 .vr .wait{color:var(--text-3)}
@@ -2619,16 +2623,28 @@ ${YQ_TRAPS}
 cast 3 到 5 人，每人都要有推动主线的功能。`;
 }
 
-async function yqChat(model, content, max_tokens){
+/* 调用云桥：忙线（429）、逾时（504/524）、5xx、网路断掉都会自动重试 3 次（等 5、15、45 秒），最后一次改用较快的模型 */
+const YQ_WAIT=[5,15,45];
+async function yqOnce(model, content, max_tokens){
   const A=authGet();
-  const r=await fetch(TJ_API+'/yq/v1/chat/completions',{method:'POST', headers:{'X-Tianji-Code':tjCode()||'','Content-Type':'application/json',...(A?{'Authorization':'Bearer '+A.token}:{})},
-    body:JSON.stringify({model, messages:[{role:'user',content}], max_tokens:max_tokens||3000, temperature:0.8})});
+  let r; try{ r=await fetch(TJ_API+'/yq/v1/chat/completions',{method:'POST', headers:{'X-Tianji-Code':tjCode()||'','Content-Type':'application/json',...(A?{'Authorization':'Bearer '+A.token}:{})},
+    body:JSON.stringify({model, messages:[{role:'user',content}], max_tokens:max_tokens||3000, temperature:0.8})}); }
+  catch(e){ throw Object.assign(new Error('网路中断'),{retry:true}); }
   const left=r.headers.get('X-Points'); if(left!==null&&A){ A.user.points=+left; authSet(A); }
   const j=await r.json().catch(()=>({}));
   if(r.status===401){ authSet(null); openLogin(); throw new Error('请先登录'); }
   if(r.status===402){ toast('今天的积分用完了，明天 0 点补满'); throw new Error('积分不足'); }
-  if(!r.ok) throw new Error((j.error&&(j.error.message||j.error))||('HTTP '+r.status));
-  return String(((j.choices||[])[0]||{}).message?.content||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+  if(!r.ok) throw Object.assign(new Error((j.error&&(j.error.message||j.error))||('HTTP '+r.status)),{retry:r.status===429||r.status>=500});
+  const txt=String(((j.choices||[])[0]||{}).message?.content||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+  if(!txt) throw Object.assign(new Error('空白回应'),{retry:true});
+  return txt;
+}
+async function yqChat(model, content, max_tokens, opts){
+  for(let k=0;;k++){
+    const m=(k===YQ_WAIT.length && model!==YQ_PLAN) ? YQ_PLAN : model;
+    try{ const t=await yqOnce(m, content, max_tokens); if(k&&opts&&opts.onRetry) opts.onRetry(0); return t; }
+    catch(e){ if(!e.retry||k>=YQ_WAIT.length) throw e; if(opts&&opts.onRetry) opts.onRetry(k+1, YQ_WAIT[k]); await new Promise(r=>setTimeout(r,YQ_WAIT[k]*1000)); }
+  }
 }
 function yqPlanPrompt(W, n, card){
   const x=[`一句话故事：${(W.pitch||'').trim()}`, `受众：${W.aud}`, `配对：${W.pair}`, `题材：${W.genre}`];
@@ -2709,25 +2725,32 @@ ${d.card?`策划卡（必须遵守）：\n${cardText(d.card)}\n`:''}${dp!=='轻�
 ${YQ_HEAT[heatOf(W)]}`;
 }
 /* 写一集：短集一次写完；3 分钟以上先排分场，再分批（每批 3 场）同时写 */
-async function yqWriteEpisode(d, W, i){
+async function yqWriteEpisode(d, W, i, hooks){
+  const H=hooks||{}, opt={onRetry:H.onRetry};
   const writer=heatOf(W)==='高尺度'?YQ_HOT:YQ_WRITE, mx=heatOf(W)==='点到为止'?3000:4000;
   const check=async txt=>{ if(depthOf(W)!=='重度') return [txt,0];
-    try{ const chk=parseJSON(await yqChat(YQ_PLAN, yqCheckPrompt(d, W, i, txt), 1500)), iss=(chk.issues||[]).filter(x=>x&&x.problem);
-      if(iss.length){ const fx=await yqChat(writer, yqFixPrompt(d, W, i, txt, iss), mx); if(fx&&fx.length>txt.length*.6) return [fx, iss.length]; } }catch(e){ if(/登录|积分/.test(e.message)) throw e; }
+    try{ const chk=parseJSON(await yqChat(YQ_PLAN, yqCheckPrompt(d, W, i, txt), 1500, opt)), iss=(chk.issues||[]).filter(x=>x&&x.problem);
+      if(iss.length){ const fx=await yqChat(writer, yqFixPrompt(d, W, i, txt, iss), mx, opt); if(fx&&fx.length>txt.length*.6) return [fx, iss.length]; } }catch(e){ if(/登录|积分/.test(e.message)) throw e; }
     return [txt,0]; };
-  if((wzMins(W)||1)<3){ const t=await yqChat(writer, yqEpPrompt(d, W, i), mx); if(!t) throw new Error('empty episode'); return check(t); }
-  const n=yqSceneCount(W), plan=(parseJSON(await yqChat(YQ_PLAN, yqScenePrompt(d, W, i, n), 4000)).scenes||[]).slice(0,n);
-  if(!plan.length) throw new Error('scene plan empty');
-  const batches=[]; for(let k=0;k<plan.length;k+=3) batches.push([k, Math.min(plan.length,k+3)]);
+  if((wzMins(W)||1)<3){ const t=await yqChat(writer, yqEpPrompt(d, W, i), mx, opt); return check(t); }
+  // 分场与写好的批次都存起来：中途失败，下次只补没写成的那几批
+  const P=(d.part=d.part||{})[i]=(d.part[i]||{});
+  if(!P.plan||!P.plan.length){ const n=yqSceneCount(W); P.plan=(parseJSON(await yqChat(YQ_PLAN, yqScenePrompt(d, W, i, n), 4000, opt)).scenes||[]).slice(0,n); P.parts=[]; P.fixed=0; H.save&&H.save(); }
+  const plan=P.plan; if(!plan.length) throw new Error('scene plan empty');
+  const SIZE=2, batches=[]; for(let k=0;k<plan.length;k+=SIZE) batches.push([k, Math.min(plan.length,k+SIZE)]);
+  P.parts=P.parts||[];
   const tailOf=k=>k===0?(d.eps[i-1]||'').slice(-500):`（上一场 ${i+1}-${k}：${plan[k-1].beat}）`;
-  const parts=new Array(batches.length); let fixed=0, next=0;
-  const worker=async()=>{ for(;;){ const b=next++; if(b>=batches.length) return; const [f,t]=batches[b];
-    const raw=await yqChat(writer, yqBatchPrompt(d, W, i, plan, f, t, tailOf(f)), 4000); if(!raw) throw new Error('empty scenes');
-    const [txt,fx]=await check(raw); parts[b]=txt; fixed+=fx; } };
+  const todo=batches.map((_,b)=>b).filter(b=>!P.parts[b]); let next=0, firstErr=null;
+  const worker=async()=>{ for(;;){ if(firstErr) return; const q=next++; if(q>=todo.length) return; const b=todo[q], [f,t]=batches[b];
+    try{ const raw=await yqChat(writer, yqBatchPrompt(d, W, i, plan, f, t, tailOf(f)), 4000, opt);
+      const [txt,fx]=await check(raw); P.parts[b]=txt; P.fixed=(P.fixed||0)+fx; H.save&&H.save(); }
+    catch(e){ firstErr=firstErr||e; } } };
   await Promise.all([worker(),worker(),worker()]);
-  let text=parts.join('\n\n');
+  if(firstErr) throw firstErr;
+  let text=P.parts.join('\n\n');
   if(i===0){ const ages=d.cast.filter(c=>/\d/.test(c.bio||'')).map(c=>`${c.name} ${(c.bio.match(/(\d+)\s*岁/)||[])[1]||''} 岁`).join('；');
     text=`【角色年龄】所有角色均已年满 18 岁${ages?'。'+ages:''}。所有亲密关系皆为双方自愿。\n\n`+text; }
+  const fixed=P.fixed||0; delete d.part[i];
   return [text, fixed];
 }
 function yqCheckPrompt(d, W, i, txt){
@@ -2768,8 +2791,9 @@ async function yqDrive(wid){
     if(!w.gen.data){
       const W=Object.assign({},WZ_DEF,w.W), n=Math.max(2,Math.min(80,+wzEps(W)||10));
       let card=w.gen.card||null;
-      if(depthOf(W)==='重度' && !card){ card=parseJSON(await yqChat(YQ_PLAN, yqCardPrompt(W,n), 6000)); updateGen(wid,{card}); yqRefresh(wid); }
-      const pl=parseJSON(await yqChat(YQ_PLAN, yqPlanPrompt(W,n,card), 8000));
+      const opt={onRetry:(k,sec)=>updateGen(wid,{note:k?`云端忙线，${sec} 秒后第 ${k} 次重试…`:null})};
+      if(depthOf(W)==='重度' && !card){ card=parseJSON(await yqChat(YQ_PLAN, yqCardPrompt(W,n), 6000, opt)); updateGen(wid,{card}); yqRefresh(wid); }
+      const pl=parseJSON(await yqChat(YQ_PLAN, yqPlanPrompt(W,n,card), 8000, opt));
       const outline=(pl.episodes||[]).slice(0,n).map((e,i)=>({title:e.title||`第${i+1}集`, event:e.event||'', hook:e.hook||'', body:[e.event, e.hook?`钩子：${e.hook}`:''].filter(Boolean).join('\n\n')}));
       if(!outline.length) throw new Error('outline empty');
       const castSrc=card&&(card.cast||[]).length?card.cast.map(c=>({...c, bio:[c.want&&`想要${c.want}`, c.flaw&&`弱点：${c.flaw}`, c.voice&&`说话：${c.voice}`].filter(Boolean).join('；')})):(pl.cast||[]);
@@ -2782,7 +2806,10 @@ async function yqDrive(wid){
       const d=w.gen.data, i=d.outline.findIndex((_,k)=>!d.eps[k]);
       if(i<0){ updateGen(wid,{status:'done'}); yqRefresh(wid); break; }
       const Wx=Object.assign({},WZ_DEF,w.W);
-      const [txt, fixedN]=await yqWriteEpisode(d, Wx, i);
+      const [txt, fixedN]=await yqWriteEpisode(d, Wx, i, {
+        save:()=>updateGen(wid,{data:d}),
+        onRetry:(n,sec)=>{ updateGen(wid,{note:n?`云端忙线，${sec} 秒后第 ${n} 次重试…`:null}); yqRefresh(wid); } });
+      d.eps[i]=txt; (d.fixed=d.fixed||[])[i]=fixedN; updateGen(wid,{data:d, note:null}); yqRefresh(wid); continue;
       const w2=cur(); if(!w2||!w2.gen||!w2.gen.data) break;
       w2.gen.data.eps[i]=txt; (w2.gen.data.fixed=w2.gen.data.fixed||[])[i]=fixedN; updateGen(wid,{data:w2.gen.data}); yqRefresh(wid);
     }
@@ -2858,7 +2885,7 @@ function viewVibeScript(id, tab){
     <div class="res-back"><a class="pill" href="#/script">${ico('back')}返回</a></div>
     <section class="done-hero">
       <h1>《${esc(w.title)}》</h1>
-      ${w.gen&&w.gen.engine==='yq'&&w.gen.data&&w.gen.status!=='done'?(()=>{const n=s.outline.length,k=(s.written||[]).filter(Boolean).length,nx=Math.max(0,(s.written||[]).indexOf(false))+1;return w.gen.status==='error'?`<div class="gen-prog err">第 ${nx} 集没写成<button class="btn-o" id="gResume">接着写</button></div>`:`<div class="gen-prog"><span class="gw-spin"></span>正在写第 ${nx} / ${n} 集<i style="--p:${Math.round(k/n*100)}%"></i></div>`})():''}
+      ${w.gen&&w.gen.engine==='yq'&&w.gen.data&&w.gen.status!=='done'?(()=>{const n=s.outline.length,k=(s.written||[]).filter(Boolean).length,nx=Math.max(0,(s.written||[]).indexOf(false))+1;return w.gen.status==='error'?`<div class="gen-prog err">第 ${nx} 集没写成<button class="btn-o" id="gResume">接着写</button></div>`:`<div class="gen-prog ${w.gen.note?'busy':''}"><span class="gw-spin"></span>${w.gen.note?esc(w.gen.note):`正在写第 ${nx} / ${n} 集`}<i style="--p:${Math.round(k/n*100)}%"></i></div>`})():''}
       <div class="stats"><span><b>${s.outline.length}</b>集</span><span><b>${wzMins(W)}</b>分钟 / 集</span><span>${esc(W.aud)}</span><span>${esc(W.pair)}</span>${W.style&&W.style!=='无'?`<span>${esc(W.style)}</span>`:''}<span>${esc(W.ratio||'9:16')}</span></div>
     </section>
     <div class="vt">
@@ -3242,6 +3269,11 @@ function viewAdmin(){
     try{
       const j=await A('/admin/users'); const fmt=t=>t?new Date(t).toLocaleString('zh-CN',{hour12:false}).slice(2,16):'';
       $('admMeta').textContent=`${j.users.length} 位 · ${j.day}`;
+      A('/admin/stats').then(st=>{ const t=st.today||{}, pct=t.n?Math.round((t.ok||0)/t.n*100):0, hr=st.lastHour||{};
+        const box=document.createElement('div'); box.className='adm-stats';
+        box.innerHTML=`<span><b>${t.n||0}</b>今日调用</span><span><b>${t.n?pct+'%':'—'}</b>成功率</span><span><b>${t.avg_ms?Math.round(t.avg_ms/1000)+'s':'—'}</b>平均耗时</span><span><b>${t.busy||0}</b>忙线 429</span><span><b>${t.timeout||0}</b>逾时</span><span><b>${hr.n||0}</b>近 1 小时</span>`+
+          (st.models||[]).map(m=>`<small>${esc(m.model)}：${m.n} 次 · 成功 ${m.ok||0} · ${m.avg_ms?Math.round(m.avg_ms/1000)+'s':'—'}</small>`).join('');
+        $('admBody').prepend(box); }).catch(()=>{});
       $('admBody').innerHTML=`<div class="adm-table"><div class="adm-r adm-h"><span>UID</span><span>手机</span><span>身份</span><span>积分</span><span>今日用</span><span>累计用</span><span>作品</span><span>最后登录</span><span>手动加点</span></div>
         ${j.users.map(u=>`<div class="adm-r" data-uid="${esc(u.uid)}"><span><b>${esc(u.uid)}</b></span><span>${esc(maskPhone(u.phone))}</span>
           <span><select data-role>${Object.entries(ROLE_NAME).map(([k,l])=>`<option value="${k}" ${u.role===k?'selected':''}>${l}</option>`).join('')}</select></span>
