@@ -2551,7 +2551,7 @@ function openVm(html){
   return m;
 }
 /* 真实模型：开写 → Worker 建单 → GitHub Actions 跑整剧 → 网页轮询。没有通行码时照旧用模板草稿 */
-const TJ_API='https://tianji-api.tianji-worker.workers.dev';
+const TJ_API="https://tianji-api.tianji-worker.workers.dev";   // 后端地址：建置时由环境变量 TIANJI_API_BASE 填入，留空 = 与网页同源
 (()=>{ try{ const k=new URLSearchParams(location.search).get('k'); if(k){ store('tjCode',k); history.replaceState(null,'',location.pathname+location.hash); } }catch(e){} })();
 const tjCode=()=>store('tjCode');
 async function tjApi(path, body){
@@ -2623,7 +2623,7 @@ ${YQ_TRAPS}
 cast 3 到 5 人，每人都要有推动主线的功能。`;
 }
 
-/* 调用云桥：忙线（429）、逾时（504/524）、5xx、网路断掉都会自动重试 3 次（等 5、15、45 秒），最后一次改用较快的模型 */
+/* 调用云桥：忙线（429）、逾时（504）、5xx、网路断掉都会自动重试 3 次（等 5、15、45 秒），最后一次改用较快的模型 */
 const YQ_WAIT=[5,15,45];
 /* 串流：模型边写边传，写得慢也不会被 100 秒切断。设成 false 就回到整段一次回传 */
 const YQ_STREAM=true;
