@@ -864,6 +864,17 @@ a.pt-banner:hover{transform:translateY(-2px)}
 .next h4{margin:0 0 14px;font-size:15px}
 .next p{margin:0 0 12px;color:var(--text-2);font-size:13.5px}
 .minework{margin-top:40px}
+/* 共用视觉：标签＝只读资讯（细框、灰字、不可点）；按钮＝动作（实心或有底色、粗字、带图示） */
+.ui-tag{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:500;line-height:1;color:var(--text-3);background:transparent;border:1px solid var(--line-2);white-space:nowrap;user-select:none}
+.ui-tag.mode{color:#c9a8ff;border-color:rgba(139,69,255,.45);background:rgba(139,69,255,.10)}
+.ui-tag.simple{color:#8fd3ff;border-color:rgba(63,182,255,.4);background:rgba(63,182,255,.08)}
+.ui-btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:10px;font-size:13.5px;font-weight:700;text-decoration:none;cursor:pointer;border:1px solid transparent;transition:filter .15s,background .15s;white-space:nowrap}
+.ui-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+.ui-btn.primary{background:var(--brand);color:#fff}.ui-btn.primary:hover{filter:brightness(1.12)}
+.ui-btn.secondary{background:#2a2a2f;color:#fff;border-color:var(--line-2)}.ui-btn.secondary:hover{background:#34343a}
+.ui-btn.danger{background:transparent;color:#ff8a95;padding:0 8px}.ui-btn.danger:hover{background:rgba(255,93,108,.12)}
+.acard .tags{display:flex;gap:6px;flex-wrap:wrap}
+.acard .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.acard .acts .ui-btn{padding:0 12px}.acard .acts .danger{margin-left:auto}
 .fhits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .fhit{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:#151517;text-decoration:none;color:#fff}
 .fhit:hover{border-color:rgba(139,69,255,.6);background:#1a1720}
@@ -1087,6 +1098,9 @@ async function copyText(text, btn){
   if(btn){btn.classList.add('done');const h=btn.innerHTML;btn.innerHTML=ico('check')+'已复制';setTimeout(()=>{btn.classList.remove('done');btn.innerHTML=h},1300)}
 }
 function zipCrc(bytes){let c=-1;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^-1)>>>0}
+/* 作品：同一个帐号只有一份清单，标准版与 PRO 共用 */
+const workHref=w=>w.kind==='simple'?'#/script/s/'+w.id:w.kind==='vibe'?'#/script/v/'+w.id:'#/script/w/'+w.id;
+const workType=w=>w.kind==='simple'?'人物即剧本':w.kind==='vibe'?'氛围写作':((typeof MODE!=='undefined'&&w.W&&MODE[w.W.mode])?MODE[w.W.mode].tab:'作品');
 function makeZip(files){
   const enc=new TextEncoder(), parts=[], central=[]; let offset=0;
   const u16=n=>new Uint8Array([n&255,n>>>8&255]), u32=n=>new Uint8Array([n&255,n>>>8&255,n>>>16&255,n>>>24&255]);
@@ -1231,9 +1245,9 @@ function viewAssets(){
     <section class="mine">
       <div class="sec-head" style="margin:0 0 14px"><h2 style="font-size:20px">我的资产</h2><span class="meta">${mine.length} 个 · 只保存在这台电脑的浏览器里</span></div>
       ${mine.length ? `<div class="grid">${mine.map((a,k)=>`<div class="acard">
-          <div class="t">${ico(FN[a.fn]?.menu.key==='scene'?'mount':'user')}${esc(a.name||'未命名')}<span class="tag" style="margin-left:auto">${esc(FN[a.fn]?.label||'')}</span></div>
+          <div class="t">${ico(FN[a.fn]?.menu.key==='scene'?'mount':'user')}${esc(a.name||'未命名')}<span class="ui-tag mode" style="margin-left:auto">${esc(FN[a.fn]?.label||'')}</span></div>
           <div class="s">${esc(a.prompt)}</div>
-          <div class="row"><button data-cp="${k}">复制提示词</button><a class="tag" style="align-self:center;text-decoration:none" href="#/assets/${a.fn}?i=${k}">打开</a><button data-del="${k}" style="margin-left:auto">删除</button></div>
+          <div class="acts"><a class="ui-btn primary" href="#/assets/${a.fn}?i=${k}">${ico('pen')}打开</a><button class="ui-btn secondary" data-cp="${k}">${ico('copy')}复制提示词</button><button class="ui-btn danger" data-del="${k}">删除</button></div>
         </div>`).join('')}</div>`
       : `<div class="empty" style="padding:30px 0">还没有资产。点上面任一功能，填好后按“保存到我的资产”。</div>`}
     </section>`;
@@ -1499,10 +1513,10 @@ function viewScriptHome(){
       <div class="row" style="justify-content:space-between"><h1>剧本</h1><a class="btn-white" href="#/script/new">${ico('plus')}新增作品</a></div>
 </div>
     ${works.length?`<div class="works">${works.map((w,k)=>`<div class="acard">
-        <div class="t">${ico('script')}《${esc(w.title||'未命名')}》<span class="tag" style="margin-left:auto">${esc(w.kind==='simple'?'人物即剧本':MODE[w.W.mode].tab)}</span></div>
-        <div class="row" style="gap:6px">${[w.W.aud,w.W.pair,w.W.genre].map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+        <div class="t">${ico('script')}《${esc(w.title||'未命名')}》<span class="ui-tag ${w.kind==='simple'?'simple':'mode'}" style="margin-left:auto">${esc(workType(w))}</span></div>
+        <div class="tags">${[w.W.aud,w.W.pair,w.W.genre].filter(Boolean).map(t=>`<span class="ui-tag">${esc(t)}</span>`).join('')}</div>
         <div class="s">${esc(w.W.pitch||'（未填卖点）')}\n${wzEps(w.W)} 集 × ${wzMins(w.W)} 分钟 · ${new Date(w.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-        <div class="row"><a class="tag" style="text-decoration:none;align-self:center" href="${w.kind==='vibe'?'#/script/v/'+w.id:'#/script/w/'+w.id}">${w.kind==='vibe'?'角色与剧情':'打开'}</a><button data-cp="${k}">复制提示词</button><button data-del="${k}" style="margin-left:auto">删除</button></div>
+        <div class="acts"><a class="ui-btn primary" href="${workHref(w)}">${ico(w.kind==='vibe'?'user':'script')}${w.kind==='vibe'?'角色与剧情':'打开'}</a>${w.kind==='simple'?'':`<button class="ui-btn secondary" data-cp="${k}">${ico('copy')}复制提示词</button>`}<button class="ui-btn danger" data-del="${k}">删除</button></div>
       </div>`).join('')}</div>`
     :`<div class="empty">还没有作品。点右上角「新增作品」开始。<br><span style="font-size:12px">作品只保存在这台电脑的浏览器里。</span></div>`}`;
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=e=>copyText(wzPrompt(works[b.dataset.cp].W),e.currentTarget));
@@ -2243,7 +2257,7 @@ function viewPartner(){
 
 function viewScriptSimple(){
   const st = store('sxPick') || {g:'male', idx:null, name:'', title:'', q:''};
-  const works=(store('works')||[]).filter(w=>w.kind==='simple');
+  const works=(store('works')||[]).filter(w=>w.kind==='simple'), allWorks=store('works')||[];
   const v=document.getElementById('view');
   v.innerHTML=`
     <div class="sx-top">
@@ -2270,8 +2284,8 @@ function viewScriptSimple(){
       <label class="search2">${ico('search')}<input id="sxq" placeholder="搜角色、金手指、流派，如“系统”“真假千金”" value="${esc(st.q)}"></label>
     </div>
     <div class="roles" id="roles"></div>
-    ${works.length?`<section class="minework"><div class="sec-head" style="margin:0 0 14px"><h2 style="font-size:20px">我的剧本</h2><span class="meta">${works.length} 部 · 保存在这台电脑</span></div>
-      <div class="works">${works.map(w=>`<a class="acard" href="#/script/s/${w.id}" style="text-decoration:none"><div class="t">${ico(w.sx.g==='male'?'user':'female')}《${esc(w.title)}》</div><div class="s">${esc(w.sx.name)} · ${esc(w.sx.role.type)}</div></a>`).join('')}</div></section>`:''}
+    ${allWorks.length?`<section class="minework"><div class="sec-head" style="margin:0 0 14px"><h2 style="font-size:20px">我的作品</h2><span class="meta">${allWorks.length} 部</span></div>
+      <div class="works">${allWorks.map(w=>`<a class="acard" href="${workHref(w)}" ${w.kind==='simple'?'':'data-pro="1"'} style="text-decoration:none"><div class="t">${ico(w.kind==='simple'?(w.sx.g==='male'?'user':'female'):'script')}《${esc(w.title||'未命名')}》<span class="ui-tag ${w.kind==='simple'?'simple':'mode'}" style="margin-left:auto">${esc(workType(w))}</span></div><div class="s">${esc(w.kind==='simple'?`${w.sx.name} · ${w.sx.role.type}`:(w.W&&w.W.pitch)||'')}</div></a>`).join('')}</div></section>`:''}
     <div class="dock">
       <div class="who"><small>主角</small><b id="who">还没选</b></div>
       <input class="in" id="sxName" placeholder="主角名字" value="${esc(st.name)}">
@@ -3037,15 +3051,12 @@ function drawNav(route){
     const works = store('works')||[];
     if(isPro() && route.view!=='start' && route.view!=='partner'){
       h += T('PRO 专业版') + A('#/script','我的作品',{cls:'head fn',icon:'script',n:works.length}) + A('#/script/new','新增作品',{cls:'head fn',icon:'plus',on:route.sub==='new'&&!route.wid});
-      if(works.length) h += T('作品') + works.map(w=>A(w.kind==='simple'?'#/script/s/'+w.id:w.kind==='vibe'?'#/script/v/'+w.id:'#/script/w/'+w.id, '《'+(w.title||'未命名')+'》',{on:!route.vibe&&(route.wid===w.id||route.sid===w.id)})).join('');
+      if(works.length) h += T('作品') + works.map(w=>A(workHref(w), '《'+(w.title||'未命名')+'》',{on:!route.vibe&&(route.wid===w.id||route.sid===w.id), d:workType(w)})).join('');
     } else {
-      const mine = works.filter(w=>w.kind==='simple');
       h += T('标准版') + A(route.view==='start'?'#/':'#/script','人物即剧本',{cls:'head fn',icon:'sparkle',on:!route.sub,d:'选主角，一键产出 10 集'});
-      if(mine.length) h += T('我的剧本') + mine.map(w=>A('#/script/s/'+w.id,'《'+w.title+'》',{on:route.sid===w.id,d:w.sx.name+' · '+w.sx.role.type})).join('');
-      // 标准版也能直接进 PRO：新增作品与 PRO 作品，点了自动切到 PRO
-      const proW = works.filter(w=>w.kind!=='simple');
-      h += T('作品') + A('#/script/new','新增作品',{cls:'head fn',icon:'plus',pro:1,on:false});
-      h += proW.map(w=>A((w.kind==='vibe'?'#/script/v/':'#/script/w/')+w.id,'《'+(w.title||'未命名')+'》',{pro:1,on:false})).join('');
+      h += A('#/script/new','新增作品',{cls:'head fn',icon:'plus',pro:1,on:false});
+      // 同一份「我的作品」：标准版、氛围写作、五步表单都在这里；非标准版的点了会切到 PRO
+      if(works.length) h += T('我的作品') + works.map(w=>A(workHref(w),'《'+(w.title||'未命名')+'》',{on:route.sid===w.id, d:w.kind==='simple'?`${workType(w)} · ${w.sx.name}`:workType(w), ...(w.kind==='simple'?{}:{pro:1})})).join('');
     }
     h += PICK + NAV.slice(0,3).map(n=>A('#/f/'+n.key,n.label,{cls:'fn',icon:n.icon,n:inFolder(n.key).length})).join('');
   } else if(fn==='assets'){
