@@ -1502,7 +1502,7 @@ function viewScriptHome(){
         <div class="t">${ico('script')}《${esc(w.title||'未命名')}》<span class="tag" style="margin-left:auto">${esc(w.kind==='simple'?'人物即剧本':MODE[w.W.mode].tab)}</span></div>
         <div class="row" style="gap:6px">${[w.W.aud,w.W.pair,w.W.genre].map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
         <div class="s">${esc(w.W.pitch||'（未填卖点）')}\n${wzEps(w.W)} 集 × ${wzMins(w.W)} 分钟 · ${new Date(w.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-        <div class="row"><a class="tag" style="text-decoration:none;align-self:center" href="#/script/w/${w.id}">打开</a><button data-cp="${k}">复制提示词</button><button data-del="${k}" style="margin-left:auto">删除</button></div>
+        <div class="row"><a class="tag" style="text-decoration:none;align-self:center" href="${w.kind==='vibe'?'#/script/v/'+w.id:'#/script/w/'+w.id}">${w.kind==='vibe'?'角色与剧情':'打开'}</a><button data-cp="${k}">复制提示词</button><button data-del="${k}" style="margin-left:auto">删除</button></div>
       </div>`).join('')}</div>`
     :`<div class="empty">还没有作品。点右上角「新增作品」开始。<br><span style="font-size:12px">作品只保存在这台电脑的浏览器里。</span></div>`}`;
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=e=>copyText(wzPrompt(works[b.dataset.cp].W),e.currentTarget));
@@ -2816,7 +2816,7 @@ function viewVibeScript(id, tab){
     </section>
     <div class="vt">
       <div class="vt-tabs" id="vtTabs">${TABS.map(([k,l])=>`<button data-t="${k}">${l}</button>`).join('')}</div>
-      <div class="vt-act"><div class="export-wrap"><button class="btn-o" id="vtExport">${ico('dl')}<span class="lbl">导出</span></button><div class="export-menu" id="exportMenu"><button id="exportZip">${ico('dl')}导出到本地（ZIP）</button><button id="exportXtasy">${ico('arrowUp')}导入到 XTASY</button></div></div><button class="btn-o" id="vtAI">${ico('sparkle')}<span class="lbl">AI 审稿</span></button></div>
+      <div class="vt-act"><a class="btn-o" id="vtEdit" href="#/script/w/${w.id}">${ico('pen')}<span class="lbl">编辑作品</span></a><div class="export-wrap"><button class="btn-o" id="vtExport">${ico('dl')}<span class="lbl">导出</span></button><div class="export-menu" id="exportMenu"><button id="exportZip">${ico('dl')}导出到本地（ZIP）</button><button id="exportXtasy">${ico('arrowUp')}导入到 XTASY</button></div></div><button class="btn-o" id="vtAI">${ico('sparkle')}<span class="lbl">AI 审稿</span></button></div>
     </div>
     <div id="vtBody"></div>`;
   const $=id=>document.getElementById(id);
@@ -3045,7 +3045,7 @@ function drawNav(route){
       // 标准版也能直接进 PRO：新增作品与 PRO 作品，点了自动切到 PRO
       const proW = works.filter(w=>w.kind!=='simple');
       h += T('作品') + A('#/script/new','新增作品',{cls:'head fn',icon:'plus',pro:1,on:false});
-      h += proW.map(w=>A('#/script/w/'+w.id,'《'+(w.title||'未命名')+'》',{pro:1,on:false})).join('');
+      h += proW.map(w=>A((w.kind==='vibe'?'#/script/v/':'#/script/w/')+w.id,'《'+(w.title||'未命名')+'》',{pro:1,on:false})).join('');
     }
     h += PICK + NAV.slice(0,3).map(n=>A('#/f/'+n.key,n.label,{cls:'fn',icon:n.icon,n:inFolder(n.key).length})).join('');
   } else if(fn==='assets'){
