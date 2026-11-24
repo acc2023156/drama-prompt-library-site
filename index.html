@@ -874,6 +874,16 @@ a.pt-banner:hover{transform:translateY(-2px)}
 .ui-btn.secondary{background:#2a2a2f;color:#fff;border-color:var(--line-2)}.ui-btn.secondary:hover{background:#34343a}
 .ui-btn.danger{background:transparent;color:#ff8a95;padding:0 8px}.ui-btn.danger:hover{background:rgba(255,93,108,.12)}
 .acard .tags{display:flex;gap:6px;flex-wrap:wrap}
+.ui-btn.ghost{background:transparent;color:var(--text-2);border-color:var(--line-2)}.ui-btn.ghost:hover{color:#fff}
+.ui-btn.danger-fill{background:#e5484d}.ui-btn[disabled]{opacity:.45;cursor:not-allowed}
+.hd-acts{gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.acard{position:relative}.pick-box{display:none;position:absolute;top:12px;right:12px;width:24px;height:24px;border-radius:7px;border:2px solid var(--line-2);background:#141416;place-items:center;z-index:2}
+.pick-box svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;opacity:0}
+.works.picking .acard{cursor:pointer}.works.picking .pick-box{display:grid}.works.picking .acard .acts{pointer-events:none;opacity:.5}
+.works.picking .acard .t .ui-tag{margin-right:34px}
+.acard.on{border-color:#e5484d;box-shadow:0 0 0 1px #e5484d inset}.acard.on .pick-box{background:#e5484d;border-color:#e5484d}.acard.on .pick-box svg{opacity:1}
+.pick-bar{position:fixed;left:50%;bottom:20px;translate:-50% 140%;z-index:40;display:flex;align-items:center;gap:10px;padding:10px 12px 10px 18px;border-radius:16px;background:#242428;border:1px solid var(--line-2);box-shadow:0 20px 50px rgba(0,0,0,.55);transition:translate .2s;max-width:calc(100vw - 24px);flex-wrap:wrap}
+.pick-bar.open{translate:-50% 0}.pick-bar span{color:var(--text-2);font-size:14px;margin-right:4px}.pick-bar b{color:#fff}
 .acard .acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.acard .acts .ui-btn{padding:0 12px}.acard .acts .danger{margin-left:auto}
 .fhits{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
 .fhit{display:flex;flex-direction:column;gap:6px;padding:14px 16px;border-radius:18px;border:1px solid var(--line);background:#151517;text-decoration:none;color:#fff}
@@ -1099,6 +1109,14 @@ async function copyText(text, btn){
 }
 function zipCrc(bytes){let c=-1;for(const b of bytes){c^=b;for(let k=0;k<8;k++)c=(c>>>1)^((c&1)?0xedb88320:0)}return(c^-1)>>>0}
 /* 作品：同一个帐号只有一份清单，标准版与 PRO 共用 */
+const TRASH_DAYS=30;
+const liveWorks=()=>(store('works')||[]).filter(w=>!w.trashed);
+function purgeTrash(){
+  const list=store('works')||[], cut=Date.now()-TRASH_DAYS*864e5, gone=list.filter(w=>w.trashed&&w.trashed<cut);
+  if(!gone.length) return;
+  store('works', list.filter(w=>!(w.trashed&&w.trashed<cut)));
+  if(typeof api==='function' && typeof authGet==='function' && authGet()) gone.forEach(w=>api('/works/'+encodeURIComponent(w.id),{method:'DELETE'}).catch(()=>{}));
+}
 const workHref=w=>w.kind==='simple'?'#/script/s/'+w.id:w.kind==='vibe'?'#/script/v/'+w.id:'#/script/w/'+w.id;
 const workType=w=>w.kind==='simple'?'人物即剧本':w.kind==='vibe'?'氛围写作':((typeof MODE!=='undefined'&&w.W&&MODE[w.W.mode])?MODE[w.W.mode].tab:'作品');
 function makeZip(files){
@@ -1486,7 +1504,7 @@ ${lib('2.12')}
 ${W.novel.trim()}`;
 }
 function wzDupCheck(W){
-  const works=(store('works')||[]).filter(w=>w.id!==W.id);
+  const works=liveWorks().filter(w=>w.id!==W.id);
   const grams=s=>{s=(s||'').replace(/\s/g,'');const g=new Set();for(let i=0;i<s.length-1;i++)g.add(s.slice(i,i+2));return g};
   const me=grams(wzTitle(W)+W.pitch+W.core);
   const hits=works.map(w=>{const o=grams((w.title||'')+(w.W.pitch||'')+(w.W.core||''));let c=0;me.forEach(x=>o.has(x)&&c++);
@@ -1506,21 +1524,34 @@ function showModal(title, text, fname){
 }
 
 function viewScriptHome(){
-  const works=store('works')||[];
+  const works=liveWorks(), trashN=(store('works')||[]).filter(w=>w.trashed).length; let picking=false; const picked=new Set();
   document.getElementById('view').innerHTML=`
     ${chatHtml()}
     <div class="wz-head" style="margin-top:34px">
-      <div class="row" style="justify-content:space-between"><h1>剧本</h1><a class="btn-white" href="#/script/new">${ico('plus')}新增作品</a></div>
+      <div class="row" style="justify-content:space-between"><h1>剧本</h1><div class="row hd-acts">${trashN?`<a class="ui-btn ghost" href="#/trash">${ico('trash')}回收桶 ${trashN}</a>`:''}${works.length?`<button class="ui-btn secondary" id="pickBtn">${ico('check')}删除作品</button>`:''}<a class="btn-white" href="#/script/new">${ico('plus')}新增作品</a></div></div>
 </div>
-    ${works.length?`<div class="works">${works.map((w,k)=>`<div class="acard">
+    ${works.length?`<div class="works" id="workGrid">${works.map((w,k)=>`<div class="acard" data-wk="${k}"><i class="pick-box">${ico('check')}</i>
         <div class="t">${ico('script')}《${esc(w.title||'未命名')}》<span class="ui-tag ${w.kind==='simple'?'simple':'mode'}" style="margin-left:auto">${esc(workType(w))}</span></div>
         <div class="tags">${[w.W.aud,w.W.pair,w.W.genre].filter(Boolean).map(t=>`<span class="ui-tag">${esc(t)}</span>`).join('')}</div>
         <div class="s">${esc(w.W.pitch||'（未填卖点）')}\n${wzEps(w.W)} 集 × ${wzMins(w.W)} 分钟 · ${new Date(w.time).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})}</div>
-        <div class="acts"><a class="ui-btn primary" href="${workHref(w)}">${ico(w.kind==='vibe'?'user':'script')}${w.kind==='vibe'?'角色与剧情':'打开'}</a>${w.kind==='simple'?'':`<button class="ui-btn secondary" data-cp="${k}">${ico('copy')}复制提示词</button>`}<button class="ui-btn danger" data-del="${k}">删除</button></div>
+        <div class="acts"><a class="ui-btn primary" href="${workHref(w)}">${ico(w.kind==='vibe'?'user':'script')}${w.kind==='vibe'?'角色与剧情':'打开'}</a>${w.kind==='simple'?'':`<button class="ui-btn secondary" data-cp="${k}">${ico('copy')}复制提示词</button>`}</div>
       </div>`).join('')}</div>`
     :`<div class="empty">还没有作品。点右上角「新增作品」开始。<br><span style="font-size:12px">作品只保存在这台电脑的浏览器里。</span></div>`}`;
   document.querySelectorAll('[data-cp]').forEach(b=>b.onclick=e=>copyText(wzPrompt(works[b.dataset.cp].W),e.currentTarget));
-  document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ if(!confirm('删除这个作品？')) return; works.splice(+b.dataset.del,1); store('works',works); viewScriptHome(); });
+  const pickBar=document.createElement('div'); pickBar.className='pick-bar'; document.getElementById('view').append(pickBar);
+  const drawPick=()=>{ document.getElementById('workGrid')?.classList.toggle('picking',picking);
+    document.querySelectorAll('[data-wk]').forEach(c=>c.classList.toggle('on',picked.has(+c.dataset.wk)));
+    pickBar.classList.toggle('open',picking);
+    pickBar.innerHTML=`<span>已选 <b>${picked.size}</b> 部</span><button class="ui-btn secondary" id="pkAll">全选</button><button class="ui-btn secondary" id="pkCancel">取消</button><button class="ui-btn primary danger-fill" id="pkGo" ${picked.size?'':'disabled'}>${ico('trash')}移到回收桶</button>`;
+    pickBar.querySelector('#pkAll').onclick=()=>{ works.forEach((_,k)=>picked.add(k)); drawPick(); };
+    pickBar.querySelector('#pkCancel').onclick=()=>{ picking=false; picked.clear(); drawPick(); };
+    pickBar.querySelector('#pkGo').onclick=()=>{ if(!picked.size) return;
+      if(!confirm(`把 ${picked.size} 部作品移到回收桶？\n${TRASH_DAYS} 天内可以在回收桶还原，之后会永久删除。`)) return;
+      const ids=new Set([...picked].map(k=>works[k].id)), list=store('works')||[], now=Date.now();
+      list.forEach(w=>{ if(ids.has(w.id)){ w.trashed=now; w.time=now; } }); store('works',list); toast(`已移到回收桶（${ids.size} 部）`); viewScriptHome(); drawNav(parse()); }; };
+  document.getElementById('pickBtn')?.addEventListener('click',()=>{ picking=!picking; picked.clear(); drawPick(); });
+  document.querySelectorAll('[data-wk]').forEach(c=>c.addEventListener('click',e=>{ if(!picking) return; e.preventDefault(); e.stopPropagation(); const k=+c.dataset.wk; picked.has(k)?picked.delete(k):picked.add(k); drawPick(); },true));
+  drawPick();
   bindChat();
 }
 
@@ -1577,7 +1608,7 @@ async function readAnyFile(file){
 function bindChat(){
   const C=chatState(), $=id=>document.getElementById(id);
   const save=()=>store('chat',C);
-  const autos=()=>(store('works')||[]).filter(w=>w.kind!=='simple' && w.W && w.W.mode==='auto');
+  const autos=()=>liveWorks().filter(w=>w.kind!=='simple' && w.W && w.W.mode==='auto');
   const ok=()=> C.tab==='paste' ? C.doc.trim().length>0 : C.tab==='auto' ? C.pitch.trim().length>0 : C.novel.trim().length>=2000;
   const fileBtn=(id,label)=>`<label class="cpill">${ico('upload')}${label}<input type="file" id="${id}" hidden accept=".docx,.pdf,.txt,.md"></label>`;
   const cntText=(k)=>{ const n=k==='doc'?C.doc.length:C.novel.trim().length; return nfmt(n)+' 字'+(k==='novel'&&n&&n<2000?' · 至少 2,000 字':k==='novel'&&n>400000?' · 超过 400,000 字':''); };
@@ -2257,7 +2288,7 @@ function viewPartner(){
 
 function viewScriptSimple(){
   const st = store('sxPick') || {g:'male', idx:null, name:'', title:'', q:''};
-  const works=(store('works')||[]).filter(w=>w.kind==='simple'), allWorks=store('works')||[];
+  const works=liveWorks().filter(w=>w.kind==='simple'), allWorks=liveWorks();
   const v=document.getElementById('view');
   v.innerHTML=`
     <div class="sx-top">
@@ -3048,7 +3079,7 @@ function drawNav(route){
   }
 
   if(fn==='script'){
-    const works = store('works')||[];
+    const works = liveWorks();
     if(isPro() && route.view!=='start' && route.view!=='partner'){
       h += T('PRO 专业版') + A('#/script','我的作品',{cls:'head fn',icon:'script',n:works.length}) + A('#/script/new','新增作品',{cls:'head fn',icon:'plus',on:route.sub==='new'&&!route.wid});
       if(works.length) h += T('作品') + works.map(w=>A(workHref(w), '《'+(w.title||'未命名')+'》',{on:!route.vibe&&(route.wid===w.id||route.sid===w.id), d:workType(w)})).join('');
@@ -3096,7 +3127,7 @@ function drawNav(route){
   const on = ps.querySelector('a.on'); if(on) on.scrollIntoView({block:'nearest'});
 }
 function setPanel(open){
-  document.body.classList.toggle('ps-off', !open);
+  document.body.classList.toggle('ps-off', !open); setTimeout(alignBack, 30); setTimeout(alignBack, 260);
   if(!matchMedia('(max-width:760px)').matches) store('panel', open);
 }
 document.getElementById('psOpen').onclick = () => setPanel(true);
@@ -3159,6 +3190,25 @@ function drawAccount(){
   }
 }
 async function refreshMe(){ const A=authGet(); if(!A) return; try{ const j=await api('/me'); A.user=j.user; authSet(A); }catch(e){} }
+
+/* 回收桶：删除的作品留 30 天，可以还原或永久删除 */
+function viewTrash(){
+  purgeTrash();
+  const v=document.getElementById('view'), list=(store('works')||[]).filter(w=>w.trashed).sort((a,b)=>b.trashed-a.trashed);
+  const left=w=>Math.max(0,Math.ceil((w.trashed+TRASH_DAYS*864e5-Date.now())/864e5));
+  v.innerHTML=`${backBar('#/script')}<div class="sec-head" style="margin-top:56px"><h2>回收桶</h2><span class="meta">${list.length} 部 · 删除后保留 ${TRASH_DAYS} 天</span>${list.length?`<button class="ui-btn danger" id="trEmpty" style="margin-left:auto">清空回收桶</button>`:''}</div>
+    ${list.length?`<div class="works">${list.map(w=>`<div class="acard"><div class="t">${ico('script')}《${esc(w.title||'未命名')}》<span class="ui-tag" style="margin-left:auto">剩 ${left(w)} 天</span></div>
+      <div class="tags"><span class="ui-tag ${w.kind==='simple'?'simple':'mode'}">${esc(workType(w))}</span></div>
+      <div class="acts"><button class="ui-btn primary" data-rs="${esc(w.id)}">${ico('back')}还原</button><button class="ui-btn danger" data-rm="${esc(w.id)}">永久删除</button></div></div>`).join('')}</div>`
+    :`<div class="empty">回收桶是空的。</div>`}`;
+  const save=(ids,restore)=>{ const L=store('works')||[];
+    if(restore){ L.forEach(w=>{ if(ids.includes(w.id)){ delete w.trashed; w.time=Date.now(); } }); store('works',L); }
+    else { store('works', L.filter(w=>!ids.includes(w.id))); if(authGet()) ids.forEach(id=>api('/works/'+encodeURIComponent(id),{method:'DELETE'}).catch(()=>{})); }
+    drawNav(parse()); viewTrash(); };
+  v.querySelectorAll('[data-rs]').forEach(b=>b.onclick=()=>{ save([b.dataset.rs],true); toast('已还原'); });
+  v.querySelectorAll('[data-rm]').forEach(b=>b.onclick=()=>{ if(confirm('永久删除这部作品？删除后无法复原。')){ save([b.dataset.rm],false); toast('已永久删除'); } });
+  const em=document.getElementById('trEmpty'); if(em) em.onclick=()=>{ if(confirm(`永久删除回收桶里全部 ${list.length} 部作品？删除后无法复原。`)) save(list.map(w=>w.id),false); };
+}
 
 /* 热词：词根、分类、热度、走势；点一个词就带进氛围写作 */
 async function viewHotwords(){
@@ -3457,7 +3507,7 @@ function parse(){
   if(h==='membership') return {view:'membership'};
   if(h.startsWith('e/')) {const e=byId[h.slice(2)];return {view:'entry',id:h.slice(2),folder:e&&e.folder}}
   if(h.startsWith('f/')) return {view:'list',folder:h.slice(2)};
-  if(h==='assembler'||h==='changelog'||h==='admin'||h==='hotwords') return {view:h};
+  if(h==='assembler'||h==='changelog'||h==='admin'||h==='hotwords'||h==='trash') return {view:h};
   if(h.startsWith('assembler?ep=')){ const [wid,i]=h.slice(13).split('.'), w=(store('works')||[]).find(x=>x.id===wid);
     return w ? {view:'assembler', ep:{wid, i:+i}, vibe:{id:wid, title:w.title, tab:'board'}} : {view:'assembler'}; }
   if(h.startsWith('script/s/')) {const [id,q]=h.slice(9).split('?');return {view:'tool',tool:'script',sub:'result',sid:id,fresh:q==='new=1'}}
@@ -3479,6 +3529,7 @@ function route(){
   else if(r.view==='membership') viewMembership();
   else if(r.view==='admin') viewAdmin();
   else if(r.view==='hotwords') viewHotwords();
+  else if(r.view==='trash') viewTrash();
   else if(r.view==='entry') viewEntry(r.id);
   else if(r.view==='assembler') viewAssembler(r.ep);
   else if(r.view==='tool' && r.tool==='assets') r.fn ? viewAssetEditor(r.fn, r.idx) : viewAssets();
@@ -3493,7 +3544,21 @@ function route(){
   else if(r.view==='changelog') viewDoc('更新记录', DATA.changelog);
   else viewList(r);
   window.scrollTo(0,0);
+  requestAnimationFrame(alignBack); setTimeout(alignBack,80); setTimeout(alignBack,400);
 }
+/* 右上「返回」与左上「目录」同一个高度（不论侧栏开关、手机或电脑） */
+function alignBack(){
+  const rb=document.querySelector('#view .res-back'); if(!rb) return;
+  rb.style.marginTop='';
+  const off=document.body.classList.contains('ps-off'), ref=off?document.querySelector('.ps-float'):document.getElementById('psClose');
+  const pill=rb.querySelector('.pill'); if(!ref||!pill||!ref.getClientRects().length) return;
+  const ps=document.getElementById('pside');
+  const refTop=ref.getBoundingClientRect().top+(off?scrollY:(ps?ps.scrollTop:0)), myTop=pill.getBoundingClientRect().top+scrollY;
+  rb.style.marginTop=(parseFloat(getComputedStyle(rb).marginTop)+refTop-myTop)+'px';
+  rb.style.top=Math.max(8, (off?refTop:ref.getBoundingClientRect().top+(ps?ps.scrollTop:0)))+'px';
+}
+addEventListener('resize',()=>requestAnimationFrame(alignBack));
+purgeTrash();
 addEventListener('hashchange',route);
 route();
 </script>
