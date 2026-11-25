@@ -79,12 +79,11 @@ section > .wrap > h2 { font-family: var(--display); font-size: clamp(26px, 4.5vw
 .intro { color: var(--muted); max-width: 40em; margin-bottom: 28px; }
 
 /* videos */
-.videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-.vcard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
-.vcard video { width: 100%; max-width: 340px; margin: 0 auto; aspect-ratio: 9 / 16; border-radius: 12px; background: #000; }
-.vcard h3 { font-size: 18px; }
-.vcard p { color: var(--fg-2); font-size: 14px; }
-.vmeta { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.videos { display: grid; grid-template-columns: repeat(2, minmax(0, 300px)); gap: 16px; }
+.vcard { margin: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 10px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.vcard video { width: 100%; aspect-ratio: 9 / 16; border-radius: 10px; background: #000; }
+.vcard figcaption { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; padding: 0 4px 2px; font-size: 15px; min-width: 0; }
+.vmeta { flex: none; font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 /* route chooser */
 .routes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
@@ -148,6 +147,9 @@ details p { margin-top: 8px; color: var(--fg-2); font-size: 15px; }
   .sample { grid-template-columns: 1fr; }
   .sample .arrow { transform: rotate(90deg); width: fit-content; }
   .opts { grid-template-columns: 1fr; gap: 2px; }
+  .videos { gap: 10px; }
+  .vcard { padding: 6px; }
+  .vcard figcaption { flex-direction: column; gap: 0; font-size: 13px; }
   .opts dd { margin-bottom: 8px; }
 }
 @media (prefers-reduced-motion: no-preference) {
@@ -166,37 +168,25 @@ details p { margin-top: 8px; color: var(--fg-2); font-size: 15px; }
 </div>
 
 <header class="wrap hero">
-  <h1>人物即剧本<br><em>选一个主角，一键出 10 集</em></h1>
+  <h1>人物即剧本<br><em>选一个主角，<span style="white-space:nowrap">一键出 10 集</span></em></h1>
   <p class="lead">天玑把热点新闻和爆款人设变成短剧剧本。挑一个话题或一个主角，确认几项设定，就能拿到一季完结的竖屏短剧剧本。</p>
   <div class="facts"><span>10～80 集</span><span>每集 1～10 分钟</span><span>9:16 竖屏</span><span>男频 / 女频</span><span>90 条精选提示词</span></div>
+  <div class="videos" id="videos">
+    <figure class="vcard">
+      <video src="video/tianji-intro.mp4" poster="video/tianji-intro.jpg" controls playsinline preload="metadata" width="720" height="1280"></video>
+      <figcaption><b>天玑快速上手</b><span class="vmeta">26 秒</span></figcaption>
+    </figure>
+    <figure class="vcard">
+      <video src="video/tianji-vibe-writing.mp4" poster="video/tianji-vibe-writing.jpg" controls playsinline preload="metadata" width="720" height="1280"></video>
+      <figcaption><b>氛围写作完整流程</b><span class="vmeta">50 秒</span></figcaption>
+    </figure>
+  </div>
   <div class="cta-row">
     <a class="btn" href="../#/">打开天玑开始写 →</a>
-    <a class="ghost" href="#videos">先看视频</a>
+    <a class="ghost" href="#routes">看图文教程</a>
   </div>
   <a class="shot" href="img/home.jpg" target="_blank" rel="noopener"><img src="img/home.jpg" alt="天玑首页：人物即剧本，下方是剧本热点七星" width="1600" height="1000"></a>
 </header>
-
-<section id="videos">
-  <div class="wrap">
-    <div class="eyebrow">看视频学</div>
-    <h2>两分钟看懂天玑</h2>
-    <p class="intro">两段竖屏视频都是在天玑上实际操作录下来的，手机上看效果最好。</p>
-    <div class="videos">
-      <article class="vcard">
-        <video src="video/tianji-intro.mp4" poster="video/tianji-intro.jpg" controls playsinline preload="metadata" width="720" height="1280"></video>
-        <h3>天玑快速上手</h3>
-        <p>从热点星和角色库两个入口出发，看一条新闻怎么变成一部 10 集短剧。</p>
-        <div class="vmeta">26 秒 · 有配乐</div>
-      </article>
-      <article class="vcard">
-        <video src="video/tianji-vibe-writing.mp4" poster="video/tianji-vibe-writing.jpg" controls playsinline preload="metadata" width="720" height="1280"></video>
-        <h3>氛围写作完整流程</h3>
-        <p>一句话故事、画风、角色、模式、集数、爽点、独家点子、思考深度，逐项走一遍。</p>
-        <div class="vmeta">50 秒 · 无声</div>
-      </article>
-    </div>
-  </div>
-</section>
 
 <section id="routes">
   <div class="wrap">
