@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>天玑上手指南</title>
+<meta name="description" content="天玑 AI 短剧平台上手指南：从热点或主角出发，一键产出 10 集短剧剧本。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&display=swap">
+<style>
+/* 单栏阅读版式，沿用天玑本身的夜空底色、紫色主按钮，热点路线用暖色星芒 */
+:root {
+  --bg: #0d0d12;
+  --panel: #16161e;
+  --panel-2: #1e1e29;
+  --line: #2a2a38;
+  --fg: #ecebf3;
+  --fg-2: #cfcdd9;
+  --muted: #9a98ab;
+  --violet: #8b5cf6;
+  --violet-deep: #6d28d9;
+  --star: #fb923c;
+  --star-2: #f43f5e;
+  --display: "Noto Serif SC", "Songti SC", "SimSun", serif;
+  --body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  line-height: 1.75;
+  background-image: radial-gradient(circle at 1px 1px, rgba(255,255,255,.05) 1px, transparent 0);
+  background-size: 22px 22px;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+a { color: inherit; }
+img, video { display: block; max-width: 100%; height: auto; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+p { margin: 0; }
+
+/* top bar */
+.bar { position: sticky; top: 0; z-index: 10; background: rgba(13,13,18,.9); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top, 0px); }
+.bar .wrap { display: flex; align-items: center; justify-content: space-between; height: 56px; gap: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; text-decoration: none; }
+.brand b { width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; background: var(--violet-deep); color: #fff; font-family: var(--display); font-size: 16px; }
+.back { font-size: 14px; color: var(--fg-2); text-decoration: none; border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; }
+.back:hover { border-color: var(--violet); color: #fff; }
+
+/* hero */
+.hero { padding-block: 44px 32px; display: grid; gap: 20px; }
+.hero h1 { font-family: var(--display); font-weight: 900; font-size: clamp(34px, 7vw, 58px); line-height: 1.15; }
+.hero h1 em, .grad { font-style: normal; background: linear-gradient(90deg, var(--star), var(--star-2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lead { color: var(--muted); font-size: 18px; max-width: 34em; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; }
+.facts span { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-variant-numeric: tabular-nums; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; padding: 12px 22px; border-radius: 12px; background: linear-gradient(90deg, var(--violet-deep), var(--violet)); color: #fff; border: 0; font: inherit; font-weight: 700; cursor: pointer; }
+.ghost { background: transparent; border: 1px solid var(--line); color: var(--fg); padding: 11px 18px; border-radius: 12px; font: inherit; font-size: 14px; cursor: pointer; text-decoration: none; }
+.btn:focus-visible, .ghost:focus-visible, .back:focus-visible, .shot:focus-visible { outline: 2px solid var(--star); outline-offset: 3px; }
+.shot { display: block; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 20px 60px rgba(109, 40, 217, .18); background: var(--panel); }
+.shot img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
+.hint { font-size: 13px; color: var(--muted); }
+
+/* sections */
+section { padding-block: 40px; border-top: 1px solid var(--line); }
+.eyebrow { font-size: 12px; letter-spacing: .14em; color: var(--muted); margin-bottom: 8px; }
+section > .wrap > h2 { font-family: var(--display); font-size: clamp(26px, 4.5vw, 36px); margin-bottom: 12px; }
+.intro { color: var(--muted); max-width: 40em; margin-bottom: 28px; }
+
+/* videos */
+.videos { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+.vcard { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; align-content: start; min-width: 0; }
+.vcard video { width: 100%; max-width: 340px; margin: 0 auto; aspect-ratio: 9 / 16; border-radius: 12px; background: #000; }
+.vcard h3 { font-size: 18px; }
+.vcard p { color: var(--fg-2); font-size: 14px; }
+.vmeta { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* route chooser */
+.routes { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+.route { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: grid; gap: 8px; text-decoration: none; }
+.route:hover { border-color: var(--violet); }
+.route .tag { font-size: 12px; font-weight: 700; width: fit-content; padding: 2px 10px; border-radius: 6px; }
+.route.a .tag { background: linear-gradient(90deg, var(--star), var(--star-2)); color: #1a0d05; }
+.route.b .tag { background: var(--violet-deep); color: #fff; }
+.route h3 { font-size: 20px; }
+.route p { color: var(--muted); font-size: 15px; }
+
+/* steps */
+.steps { display: grid; gap: 36px; }
+.step { display: grid; gap: 14px; }
+.step-head { display: flex; gap: 14px; align-items: baseline; }
+.num { flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 700; font-variant-numeric: tabular-nums; font-size: 15px; }
+.a-route .num { background: linear-gradient(135deg, var(--star), var(--star-2)); color: #1a0d05; }
+.b-route .num { background: var(--violet-deep); color: #fff; }
+.step h3 { font-size: 20px; line-height: 1.4; }
+.step-body { display: grid; gap: 12px; padding-left: 48px; min-width: 0; }
+.step-body p { color: var(--fg-2); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips span { font-size: 13px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 2px 10px; }
+.opts { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.opts dt { color: var(--muted); }
+.opts dd { margin: 0; color: var(--fg-2); min-width: 0; }
+.note { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--star); border-radius: 10px; padding: 12px 14px; font-size: 15px; color: var(--fg-2); }
+
+/* sample */
+.sample { display: grid; grid-template-columns: 1fr auto 1.4fr; gap: 14px; align-items: center; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; margin-bottom: 36px; }
+.sample .k { font-size: 12px; color: var(--muted); letter-spacing: .1em; margin-bottom: 4px; }
+.sample .topic { font-weight: 700; }
+.sample .arrow { color: var(--star); font-size: 22px; }
+.sample .premise { font-family: var(--display); font-weight: 700; line-height: 1.7; }
+
+/* tools */
+.tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.tool { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; display: grid; grid-template-rows: auto 1fr; }
+.tool .shot { border: 0; border-radius: 0; box-shadow: none; border-bottom: 1px solid var(--line); }
+.tool-body { padding: 18px 20px 22px; display: grid; gap: 8px; align-content: start; }
+.tool-body h3 { font-size: 19px; }
+.tool-body p, .tool-body li { color: var(--fg-2); font-size: 15px; }
+.tool-body ul { margin: 0; padding-left: 1.2em; }
+.status { font-size: 12px; padding: 1px 8px; border-radius: 6px; background: var(--panel-2); border: 1px solid var(--line); color: var(--muted); margin-left: 6px; vertical-align: middle; font-weight: 500; }
+
+/* faq */
+.faq { display: grid; gap: 10px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+summary { cursor: pointer; font-weight: 700; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: "+"; color: var(--muted); font-weight: 400; }
+details[open] summary::after { content: "−"; }
+details p { margin-top: 8px; color: var(--fg-2); font-size: 15px; }
+
+.closing { display: grid; gap: 16px; padding-block: 48px 64px; border-top: 1px solid var(--line); }
+.closing h2 { font-family: var(--display); font-size: clamp(28px, 5vw, 40px); }
+.copied { font-size: 13px; color: var(--star); }
+
+@media (max-width: 560px) {
+  .step-body { padding-left: 0; }
+  .sample { grid-template-columns: 1fr; }
+  .sample .arrow { transform: rotate(90deg); width: fit-content; }
+  .opts { grid-template-columns: 1fr; gap: 2px; }
+  .opts dd { margin-bottom: 8px; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .route, .btn, .back { transition: border-color .2s, transform .2s; }
+  .btn:hover { transform: translateY(-1px); }
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="wrap">
+    <a class="brand" href="../#/"><b>天</b>天玑上手指南</a>
+    <a class="back" href="../#/">返回天玑</a>
+  </div>
+</div>
+
+<header class="wrap hero">
+  <h1>人物即剧本<br><em>选一个主角，一键出 10 集</em></h1>
+  <p class="lead">天玑把热点新闻和爆款人设变成短剧剧本。挑一个话题或一个主角，确认几项设定，就能拿到一季完结的竖屏短剧剧本。</p>
+  <div class="facts"><span>10～80 集</span><span>每集 1～10 分钟</span><span>9:16 竖屏</span><span>男频 / 女频</span><span>90 条精选提示词</span></div>
+  <div class="cta-row">
+    <a class="btn" href="../#/">打开天玑开始写 →</a>
+    <a class="ghost" href="#videos">先看视频</a>
+  </div>
+  <a class="shot" href="img/home.jpg" target="_blank" rel="noopener"><img src="img/home.jpg" alt="天玑首页：人物即剧本，下方是剧本热点七星" width="1600" height="1000"></a>
+</header>
+
+<section id="videos">
+  <div class="wrap">
+    <div class="eyebrow">看视频学</div>
+    <h2>两分钟看懂天玑</h2>
+    <p class="intro">两段竖屏视频都是在天玑上实际操作录下来的，手机上看效果最好。</p>
+    <div class="videos">
+      <article class="vcard">
+        <video src="video/tianji-intro.mp4" poster="video/tianji-intro.jpg" controls playsinline preload="metadata" width="720" height="1280"></video>
+        <h3>天玑快速上手</h3>
+        <p>从热点星和角色库两个入口出发，看一条新闻怎么变成一部 10 集短剧。</p>
+        <div class="vmeta">26 秒 · 有配乐</div>
+      </article>
+      <article class="vcard">
+        <video src="video/tianji-vibe-writing.mp4" poster="video/tianji-vibe-writing.jpg" controls playsinline preload="metadata" width="720" height="1280"></video>
+        <h3>氛围写作完整流程</h3>
+        <p>一句话故事、画风、角色、模式、集数、爽点、独家点子、思考深度，逐项走一遍。</p>
+        <div class="vmeta">50 秒 · 无声</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="routes">
+  <div class="wrap">
+    <div class="eyebrow">两条起点</div>
+    <h2>你手上有什么，就从哪里开始</h2>
+    <p class="intro">首页有两个入口。还没想好写什么，就从热点出发；已经知道想写哪种爽剧，就从主角出发。</p>
+    <div class="routes">
+      <a class="route a" href="#route-a">
+        <span class="tag">路线 A</span>
+        <h3>从热点出发</h3>
+        <p>点一颗「剧本热点七星」，天玑已经把新闻改编成短剧梗概，带着灵感直接开写。</p>
+      </a>
+      <a class="route b" href="#route-b">
+        <span class="tag">路线 B</span>
+        <h3>从主角出发</h3>
+        <p>在角色库里选一个验证过的爆款人设，名字和剧名会自动填好，一键产出剧本。</p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section id="route-a" class="a-route">
+  <div class="wrap">
+    <div class="eyebrow">路线 A · 从热点出发</div>
+    <h2>一条新闻，变成一部短剧</h2>
+    <p class="intro">热点分为热点、爆款、社会、财经、科技、生活六类，每类挑出热度最高的 7 条，每条都配好一个有冲突、有反转的短剧梗概。</p>
+
+    <div class="sample" aria-label="热点改编示例">
+      <div><div class="k">今日热点</div><div class="topic">羽绒服的那些坑你踩过多少</div></div>
+      <div class="arrow" aria-hidden="true">→</div>
+      <div><div class="k">天玑改编的梗概</div><div class="premise">妻子在丈夫的羽绒服口袋里发现一张干洗小票，地址在城另一头，顺着查出一段婚外情。</div></div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-head"><span class="num">1</span><h3>点一颗热点星</h3></div>
+        <div class="step-body">
+          <p>在首页往下滑到「剧本热点七星」，先选上方的分类，再点任意一颗星。越靠中间的星热度越高；右侧的 TOP 7 列表可以先读梗概再决定。</p>
+          <a class="shot" href="img/stars.jpg" target="_blank" rel="noopener"><img src="img/stars.jpg" alt="剧本热点七星：七颗星按热度排列，右侧是 TOP 7 热点列表" width="1600" height="1000" loading="lazy"></a>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-head"><span class="num">2</span><h3>在「氛围写作」确认设定</h3></div>
+        <div class="step-body">
+          <p>点星之后会跳到「剧本 · 氛围写作」，梗概已经填进输入框，可以直接改成你自己的故事。下面每个设定都能点开调整：</p>
+          <dl class="opts">
+            <dt>风格</dt><dd>真人写实、古风写实、2D 动漫、3D 渲染、末日废土写实、国漫 3D 仙侠</dd>
+            <dt>画幅</dt><dd>9:16、16:9、3:4、1:1</dd>
+            <dt>频道</dt><dd>女性向、男性向、男同志向</dd>
+            <dt>角色</dt><dd>妖／仙、逆袭者、熟女／御姐、师徒／教练、主仆／雇佣、霸总／上司等</dd>
+            <dt>模式</dt><dd>逆袭打脸、隐藏身份／掉马、虐恋、甜宠、复仇等</dd>
+            <dt>集数</dt><dd>10、20、30、60、80 集</dd>
+            <dt>单集时长</dt><dd>1、2、3、5、8、10 分钟</dd>
+          </dl>
+          <p>再往下是常用爽点标签，点一下就加进去：</p>
+          <div class="chips"><span>身分反转</span><span>被偏爱</span><span>打脸</span><span>追妻</span><span>先婚后爱</span><span>破镜重圆</span><span>逆袭</span></div>
+          <a class="shot" href="img/write.jpg" target="_blank" rel="noopener"><img src="img/write.jpg" alt="氛围写作页：梗概已填入，下方是风格、画幅、集数等设定" width="1600" height="1000" loading="lazy"></a>
+          <div class="note">展开「你的独家点子」，补一句只有你想得到的设定，例如「女主能听见所有人的心声，唯独听不见男主」。输入框右下角的「轻度思考」可以调成中、重，想得越深剧本越细。</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-head"><span class="num">3</span><h3>按「开写」</h3></div>
+        <div class="step-body">
+          <p>第一次开写时，天玑会请你输入手机号登录，登录后就开始生成剧本。生成好的作品会出现在「我的作品」里。</p>
+          <div class="note">已经有剧本或小说？在同一个面板切到「上传剧本」或「汇入小说」。小说支持 2,000～400,000 字，可以直接贴上全文，也可以选 Word、PDF、txt、md 文件。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="route-b" class="b-route">
+  <div class="wrap">
+    <div class="eyebrow">路线 B · 从主角出发</div>
+    <h2>选一个主角，一键产出 10 集</h2>
+    <p class="intro">首页下方是角色库，收了一批跑出过成绩的爽剧主角，标着「爆款验证」的是被市场验证过的人设。</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-head"><span class="num">1</span><h3>选频道</h3></div>
+        <div class="step-body">
+          <p>在角色库上方切换「男频」或「女频」。也可以直接在搜索框里搜角色、金手指或流派，例如「系统」「真假千金」。</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-head"><span class="num">2</span><h3>选主角</h3></div>
+        <div class="step-body">
+          <p>每张卡片写着主角是谁、开局处境和金手指。点一下选中，底部栏会自动填上主角名字和剧名。名字和剧名都可以直接改，旁边的骰子按钮可以换一组。</p>
+          <a class="shot" href="img/hero.jpg" target="_blank" rel="noopener"><img src="img/hero.jpg" alt="角色库：选中「被逼入赘的隐藏狂婿」后，底部栏自动填入主角名字和剧名" width="1600" height="1000" loading="lazy"></a>
+          <div class="chips"><span>都市签到神豪</span><span>废物皇子扮猪逆袭</span><span>隐身战神保镖</span><span>装穷的隐藏大佬</span><span>规则怪谈</span><span>杂灵根修仙</span><span>天医下山</span></div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-head"><span class="num">3</span><h3>按「一键产出剧本」</h3></div>
+        <div class="step-body">
+          <p>默认产出 10 集、每集 1 分钟、一季完结的简体中文剧本。和路线 A 一样，第一次使用需要输入手机号登录。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="tools">
+  <div class="wrap">
+    <div class="eyebrow">写完剧本之后</div>
+    <h2>从剧本走到成片</h2>
+    <p class="intro">顶部导航的另外三个页面，帮你把剧本变成能拍、能生成视频的素材。</p>
+    <div class="tools">
+      <article class="tool">
+        <a class="shot" href="img/assets.jpg" target="_blank" rel="noopener"><img src="img/assets.jpg" alt="资产库：创建角色与创建场景两组功能" width="1600" height="1000" loading="lazy"></a>
+        <div class="tool-body">
+          <h3>资产库</h3>
+          <p>给剧里的人物和场景建立固定档案，后面生成画面时长相和场景才不会跑掉。</p>
+          <ul>
+            <li>角色：角色设定板、三视图与脸部特写、脸身分离图</li>
+            <li>场景：场景设定板、昼夜天气变体、无人物空镜</li>
+          </ul>
+        </div>
+      </article>
+      <article class="tool">
+        <a class="shot" href="img/prompts.jpg" target="_blank" rel="noopener"><img src="img/prompts.jpg" alt="提示词库：短剧提示词，从灵感到成片的模块库" width="1600" height="1000" loading="lazy"></a>
+        <div class="tool-body">
+          <h3>提示词库</h3>
+          <p>90 条整理好的短剧提示词，复制给任何 AI 都能用。按流程分为立项与大纲、小说转剧本、剧本精修、视频生成、合规、归档。</p>
+          <p>例如「黄金前 3 秒开篇钩子」帮你写开头，「集尾断章公式」让观众忍不住点下一集。</p>
+        </div>
+      </article>
+      <article class="tool">
+        <div class="tool-body">
+          <h3>分镜 <span class="status">开发中</span></h3>
+          <p>之后可以把剧本拆成分镜表，再组装成每集 4～6 段的视频提示词。正式上线前，先用提示词库里「视频生成」分类和「6.0 组装器」。</p>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="faq">
+  <div class="wrap">
+    <div class="eyebrow">常见问题</div>
+    <h2>开始之前</h2>
+    <div class="faq">
+      <details open>
+        <summary>需要注册吗？</summary>
+        <p>浏览热点、角色库和提示词不用登录。按「开写」或「一键产出剧本」时，输入手机号即可开始。</p>
+      </details>
+      <details>
+        <summary>我的作品存在哪里？</summary>
+        <p>没登录时，作品和资产只保存在这台电脑的浏览器里，换电脑、换浏览器或清除浏览器数据后会看不到。登录后，换装置也能接着写。</p>
+      </details>
+      <details>
+        <summary>一集多长？能改集数吗？</summary>
+        <p>默认 10 集、每集 1 分钟、9:16 竖屏。在氛围写作的设定栏可以改成 10～80 集、每集 1～10 分钟，画幅也能换。</p>
+      </details>
+      <details>
+        <summary>标着 PRO 的是什么？</summary>
+        <p>标着 PRO 的是专业版功能，例如「新增作品」。标准版就能用「人物即剧本」一键产出。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="wrap closing">
+  <h2>今天的热点，就是你明天的<span class="grad">剧本</span></h2>
+  <p class="lead">打开天玑，点一颗星或选一个主角，几分钟后拿到一整季剧本。</p>
+  <div class="cta-row">
+    <a class="btn" href="../#/">打开天玑 →</a>
+    <button class="ghost" id="copyLink" type="button">复制这页链接分享给朋友</button>
+    <span class="copied" id="copied" hidden>已复制</span>
+  </div>
+</footer>
+
+<script>
+document.getElementById('copyLink').addEventListener('click', function () {
+  var url = location.href.split('#')[0];
+  var done = function () { var c = document.getElementById('copied'); c.hidden = false; setTimeout(function () { c.hidden = true; }, 1800); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(done, function () { window.prompt('复制这个链接：', url); });
+  } else { window.prompt('复制这个链接：', url); }
+});
+// 同一时间只播一段视频
+document.querySelectorAll('video').forEach(function (v) {
+  v.addEventListener('play', function () { document.querySelectorAll('video').forEach(function (o) { if (o !== v) o.pause(); }); });
+});
+</script>
+</body>
+</html>
