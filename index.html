@@ -2186,7 +2186,7 @@ const SX_ALLY = {male:['小陈','老周','阿凯'], female:['小雨','阿宁','�
 const SX_LOC = {male:['宴会厅','公司会议室','老宅客厅','医院走廊','写字楼大堂','街边大排档','停车场'],
                 female:['订婚宴现场','豪门客厅','公司会议室','雨夜街头','医院走廊','发布会后台','咖啡馆']};
 function sxRng(seed){ let a=seed>>>0||1; return ()=>{a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}; }
-function sxScript(s){
+function sxScriptBase(s){
   const R=sxRng(s.seed||1), P2=a=>a[Math.floor(R()*a.length)];
   const t=s.role, g=s.g, n=s.name, P=g==='male'?'他':'她';
   const O=oppOf(t.rel), o=P2(SX_OPP[g]), a=P2(SX_ALLY[g]);
@@ -2260,6 +2260,31 @@ function sxScript(s){
     const tail=[`> 本集钩子：${e.hk}`]; if(i<9) tail.push(`> 下集预告：${s.outline[i+1][0]}。`);
     return head.join('\n')+'\n\n'+body+'\n'+tail.join('\n');
   });
+}
+function sxScript(s){
+  const b=sxScriptBase(s), E=s.edits&&s.edits.seed===s.seed?s.edits.eps:[];
+  return b.map((x,i)=>E[i]||x);
+}
+/* 标准版按意见改：送 AI 改这一集，改好的存在 s.edits */
+function sxNotePrompt(s, i, txt, note){
+  return `按修改意见改写短剧《${s.title}》第 ${i+1} 集剧本。${note?'意见没提到的地方尽量保留原样':'保留本集大纲，换一种写法重写'}；格式与原稿一样，篇幅跟原稿差不多。只输出改好的这一集剧本，不要集名标题和说明。
+${note?`修改意见：\n${note}\n`:''}
+主角：${s.name}（${s.role.type}）
+本集大纲：${s.outline[i][1]}
+
+原剧本：
+${txt}
+
+${YQ_RULES}`;
+}
+function sxCheckPrompt(s, i, txt){
+  return `你是短剧审稿。检查短剧《${s.title}》第 ${i+1} 集剧本，只找真正要改的问题，最多 5 条：前后矛盾、节奏拖沓、钩子不够、对白有说明腔、拍不出来的写法。
+本集大纲：${s.outline[i][1]}
+
+剧本：
+${txt}
+
+只输出 JSON：{"issues":[{"where":"哪一场","problem":"问题","fix":"改法"}]}，没有问题就输出 {"issues":[]}。`;
 }
 const sxScriptText = s => `《${s.title}》10 集完整台词\n主角：${s.name}（${s.role.type}）\n\n`+sxScript(s).join('\n\n---\n\n');
 function sxHL(txt){ return esc(txt).split('\n').map(l=>/^\d+-\d+\s/.test(l)?`<b class="d">${l}</b>`:/^△|^\[画面\]|^【/.test(l)?`<span class="a">${l}</span>`:/^音乐提示|^&gt;/.test(l)?`<span class="m">${l}</span>`:/^#/.test(l)?`<b class="d">${l.replace(/^#+\s*/,'')}</b>`:/：“|：「/.test(l)||/^[一-龥A-Za-z]{1,8}(（[^）]*）)?：/.test(l)?`<span class="d">${l}</span>`:l).join('\n'); }
@@ -2644,7 +2669,7 @@ function startGen(w){
 /* 逐集写：先出大纲（快模型），再一集一集写（主写模型）；离开页面会停，回来接着写 */
 /* 天玑版本：只在我们的测试站；公司版确认后再合并 */
 const TJ_VER='v1.2'; (document.getElementById('tjVer')||{}).textContent=TJ_VER;
-const TJ_LOG='# 天玑版本说明\n\n## v1.2（2026-11-26）\n\n**写作**\n- 篇幅照业界口径：每分钟约 400 字（原本按 800 字算，5 分钟一集会写成两倍长），并设上限；场数约每分钟一场。\n- 独家点子写了「每集 X–Y 字」「不超过 N 场」就照它；写完超过上限会再精简一次。\n- 独家点子会带进每一个写作步骤（策划、分场、逐场写稿、自检）；跟系统默认冲突时以作者写的为准，底线除外。\n- 片名有填就照用，不会自己改；最后一集完整收尾，不留续季钩子。\n- 亲密戏的分集安排，作者有写就照作者的。\n- 大纲会把作者要求落到具体哪一集；每集写完再对一次，没做到的补上（例如互动节点写成 A/B 选项）。\n- 人名字卡由系统补在角色第一次出场的那一场；独家点子写「每集」就每集补。\n\n**改稿**\n- 「重写」可以写修改意见，AI 只改那些地方；也可以先按「AI 挑问题」，让平台审这一集、把问题列进去再改。留空就整集重写。\n\n**底线**\n- 「正常」档：没有血缘的继亲、姻亲关系，故事需要时可以写（全员成年、双方自愿，片名与简介不点明）。血亲仍不写。\n- 「高尺度」档：照公司标签体系 v3 口径。未成年、非自愿三档都一律不写。\n\n**修正**\n- 停在「分镜图」分页时，写作不会再因页面出错而中断。\n\n## v1.1（2026-11-26）\n\n- 作品卡的爽点改成自动标签：依题材与尺度配好 3～5 个，可以拿掉；切换尺度会重配。\n- 标签带进写作提示词、上架资料与导出的 project.json。\n- 热词入口拿掉，热词改在后台用于标签排序与上架资料。\n\n## v1.0\n\n- 与公司版相同的起点。\n';
+const TJ_LOG='# 天玑版本说明\n\n## v1.2（2026-11-26）\n\n**写作**\n- 篇幅照业界口径：每分钟约 400 字（原本按 800 字算，5 分钟一集会写成两倍长），并设上限；场数约每分钟一场。\n- 独家点子写了「每集 X–Y 字」「不超过 N 场」就照它；写完超过上限会再精简一次。\n- 独家点子会带进每一个写作步骤（策划、分场、逐场写稿、自检）；跟系统默认冲突时以作者写的为准，底线除外。\n- 片名有填就照用，不会自己改；最后一集完整收尾，不留续季钩子。\n- 亲密戏的分集安排，作者有写就照作者的。\n- 大纲会把作者要求落到具体哪一集；每集写完再对一次，没做到的补上（例如互动节点写成 A/B 选项）。\n- 人名字卡由系统补在角色第一次出场的那一场；独家点子写「每集」就每集补。\n\n**改稿**\n- 「重写」可以写修改意见，AI 只改那些地方；也可以先按「AI 挑问题」，让平台审这一集、把问题列进去再改。留空就整集重写。\n- 标准版「人物即剧本」的「完整台词」也一样：每集都有「重写」，可以带意见改。顶部的「重写」仍是整部换一版。\n\n**底线**\n- 「正常」档：没有血缘的继亲、姻亲关系，故事需要时可以写（全员成年、双方自愿，片名与简介不点明）。血亲仍不写。\n- 「高尺度」档：照公司标签体系 v3 口径。未成年、非自愿三档都一律不写。\n\n**修正**\n- 停在「分镜图」分页时，写作不会再因页面出错而中断。\n\n## v1.1（2026-11-26）\n\n- 作品卡的爽点改成自动标签：依题材与尺度配好 3～5 个，可以拿掉；切换尺度会重配。\n- 标签带进写作提示词、上架资料与导出的 project.json。\n- 热词入口拿掉，热词改在后台用于标签排序与上架资料。\n\n## v1.0\n\n- 与公司版相同的起点。\n';
 const YQ_PLAN='deepseek-v41-flash-uncensored', YQ_WRITE='sealion-nova-pro';
 const YQ_RULES='【底线】所有角色都是 20 岁以上的成年人，不写学生、校园或未成年暗示；不写血亲、继亲、姻亲之间的感情或亲密；亲密戏必须看得出双方清楚自愿，不写醉酒、昏迷、催眠、下药或威胁下的亲密；任何角色说「不要」「放开」「停」，对方就要停下，不能继续推进；强势、支配类的情节要写成双方都乐意的拉扯，不是强迫；不对应真实人物，不用知名作品的角色名；不碰时事政治。';
 /* 尺度：三档。高尺度的亲密场次改由亲密戏写得最开的模型来写 */
@@ -3346,8 +3371,9 @@ function viewScriptResult(id, fresh){
     const d=i=>`animation-delay:${anim?i*.07:0}s`;
     $('rbody').innerHTML = tab==='outline'
       ? `<div class="eps">${s.outline.map(([h,b],i)=>`<div class="ep" style="${d(i)}"><div class="h"><b>EP${String(i+1).padStart(2,'0')}</b><span>${esc(h)}</span></div><p>${esc(b)}</p></div>`).join('')}</div>`
-      : `<div class="scr">${sxScript(s).map((x,i)=>`<div class="ep" style="${d(i)}"><div class="h"><b>EP${String(i+1).padStart(2,'0')}</b><span>${esc(s.outline[i][0])}</span></div><pre>${sxHL(x.split('\n').slice(1).join('\n').trim())}</pre></div>`).join('')}</div>`;
+      : `<div class="scr">${sxScript(s).map((x,i)=>`<div class="ep" id="sep${i}" style="${d(i)}"><div class="h"><b>EP${String(i+1).padStart(2,'0')}</b><span>${esc(s.outline[i][0])}</span><button class="btn-o ep-redo" data-redo="${i}">${ico('dice')}重写</button></div><pre>${sxHL(x.split('\n').slice(1).join('\n').trim())}</pre></div>`).join('')}</div>`;
     anim=false;
+    $('rbody').querySelectorAll('[data-redo]').forEach(b=>b.onclick=()=>sxRedo(+b.dataset.redo, b.closest('.ep')));
     $('nxH').textContent = tab==='script' ? '10 集完整台词已生成' : '下一步：把大纲写成完整台词';
     $('toScript').style.display = tab==='script'?'none':'';
   }
@@ -3356,7 +3382,32 @@ function viewScriptResult(id, fresh){
   $('toScript').onclick=()=>{ if(!s.seed) setSeed(); tab='script'; anim=true; draw(); $('rbody').scrollIntoView({behavior:'smooth',block:'start'}); };
   $('scCopy').onclick=e=>copyText(sxScriptText(s),e.currentTarget);
   $('scDl').onclick=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(["\uFEFF"+sxScriptText(s)],{type:'text/plain;charset=utf-8'}));a.download=`${s.title}-10集完整台词.txt`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)};
-  $('redo').onclick=()=>{ setSeed(); tab='script'; anim=true; draw(); toast('已重写一版台词'); };
+  $('redo').onclick=()=>{ if(s.edits&&s.edits.seed===s.seed&&s.edits.eps.some(Boolean)&&!confirm('整部重写会换掉已经按意见改过的集，确定吗？')) return; setSeed(); tab='script'; anim=true; draw(); toast('已重写一版台词'); };
+  function sxRedo(k, box){
+    if(box.querySelector('.redo-box')) return;
+    const body=()=>sxScript(s)[k].split('\n').slice(1).join('\n').trim();
+    box.querySelector('.h').insertAdjacentHTML('afterend',`<div class="redo-box"><textarea rows="3" placeholder="要改哪里？留空就整集重写"></textarea>
+      <div class="redo-act"><button class="ui-btn ghost" data-r="find">${ico('sparkle')}AI 挑问题</button><span></span><button class="ui-btn ghost" data-r="x">取消</button><button class="ui-btn primary" data-r="go">${ico('dice')}重写</button></div></div>`);
+    const rb=box.querySelector('.redo-box'), ta=rb.querySelector('textarea'), btns=rb.querySelectorAll('button');
+    const busy=on=>btns.forEach(x=>x.disabled=on);
+    ta.focus();
+    rb.querySelector('[data-r="x"]').onclick=()=>rb.remove();
+    rb.querySelector('[data-r="find"]').onclick=async e=>{
+      if(!authGet()){ openLogin(); return; } const fb=e.currentTarget, old=fb.innerHTML; busy(true); fb.innerHTML='<span class="gw-spin"></span>正在挑…';
+      try{ const iss=(parseJSON(await yqChat(YQ_PLAN, sxCheckPrompt(s, k, body()), 1500)).issues||[]).filter(x=>x&&x.problem);
+        ta.value=iss.map((x,n)=>`${n+1}. ${x.where||''}：${x.problem}${x.fix?' → '+x.fix:''}`).join('\n'); if(!iss.length) toast('没挑到要改的问题'); }
+      catch(err){ toast(/登录|积分/.test(err.message)?err.message:'没挑成功，再试一次'); }
+      busy(false); fb.innerHTML=old; };
+    rb.querySelector('[data-r="go"]').onclick=async e=>{
+      if(!authGet()){ openLogin(); return; } const gb=e.currentTarget, old=gb.innerHTML; busy(true); gb.innerHTML='<span class="gw-spin"></span>正在改…';
+      try{ const cur=body(), fx=yqTidy(await yqChat(YQ_WRITE, sxNotePrompt(s, k, cur, ta.value.trim()), 5000));
+        if(!fx||fx.length<cur.length*.5) throw new Error('改写不完整');
+        if(!s.edits||s.edits.seed!==s.seed) s.edits={seed:s.seed, eps:[]};
+        s.edits.eps[k]=`# 第${k+1}集：${s.outline[k][0]}\n`+fx; sxSaveWork(s); toast(`第 ${k+1} 集已改好`);
+        if(document.body.contains(box)){ draw(); document.getElementById('sep'+k)?.scrollIntoView({block:'start'}); } return; }
+      catch(err){ toast(/登录|积分/.test(err.message)?err.message:'没改成功，再试一次'); }
+      busy(false); gb.innerHTML=old; };
+  }
   $('seePrompt').onclick=()=>showModal(`《${s.title}》10 集剧本提示词`, prompt, `${s.title}-10集剧本提示词.txt`);
   draw();
   document.getElementById('toPro').onclick=()=>{ store('pro',true); location.hash='#/script/w/'+w.id; };
