@@ -2412,7 +2412,7 @@ function viewScriptSimple(){
     </div>`;
   const $=id=>document.getElementById(id);
   const hotBase=[['AI 短剧','短剧',94,31,'+12'],['重生复仇','重生',89,22,'+8'],['真假千金','千金',83,16,'+5'],['先婚后爱','先婚',77,12,'+3'],['末日求生','末日',72,9,'+11'],['悬疑反转','反转',66,6,'+4'],['古装权谋','古装',61,4,'-1']];
-  // 开阳演员库精选：仅带入公开展示所需的姓名与分类；角色能力仍映射到天玑本地角色原型。
+  // 演员库精选：仅带入公开展示所需的姓名与分类；角色能力仍映射到天玑本地角色原型。
   const rolePick=[['小倩','female',0],['苏晚','female',1],['沈知微','female',2],['江眠琴','female',3],['邓依依','female',4],['乔乔','female',5],['乔安','female',6]];
   const starColors=['#8b45ff','#3282ff','#00a88b','#f09a3e','#e44f82','#7183a4','#b76cff'];
   let orbitRange='24h', dipperBoard='hot';
@@ -2426,7 +2426,7 @@ function viewScriptSimple(){
     const list=hotCat==='爆款'?H.works.map(w=>[w.t,w.ideas[0]||w.genre]):H.topics.filter(t=>hotCat==='热点'||t.cat===hotCat).map(t=>[t.t,t.ideas[0]||'']);
     return list.length?list.slice(0,7).map((x,i)=>[x[0],x[1],99-i*6,i]):null;};
   const hotData=()=>hotBase.map((d,i)=>[d[0],d[1],Math.max(45,d[2]+(orbitRange==='1h'?[3,2,-1,2,5,-2,1][i]:orbitRange==='7d'?[-5,1,3,4,-2,5,2][i]:0)),d[3],d[4]]);
-  const roleData=()=>rolePick.map(([name,g,i],k)=>[name,g,i,92-k*6,Math.max(5,24-k*3),k<3?`+${8-k*2}`:`+${k-2}`,'开阳精选 · 真人现代']);
+  const roleData=()=>rolePick.map(([name,g,i],k)=>[name,g,i,92-k*6,Math.max(5,24-k*3),k<3?`+${8-k*2}`:`+${k-2}`,'精选 · 真人现代']);
   // 剧本七星：点星体 → 带一句起手故事进「氛围写作」，直接出作品卡
   const HOT_PITCH={'AI 短剧':'被 AI 取代工作的普通人，意外发现自己能看见 AI 的漏洞','重生复仇':'她重生回被背叛的前一天，这一次要让所有人付出代价','真假千金':'被换掉人生二十年的真千金回家，假千金抢先一步对她示好','先婚后爱':'为了家族协议闪婚的两个人，约定一年后离婚','末日求生':'末日第一天，她囤满了物资，前男友却敲开了她的门','悬疑反转':'新搬来的邻居每晚准点敲门，说自己才是这里的屋主','古装权谋':'被废的皇后带着一道密旨回宫，要扳倒当朝首辅'};
   function openHot(d){
@@ -2441,8 +2441,8 @@ function viewScriptSimple(){
     const lv=live(), data=dipperBoard==='hot'?(lv||hotData()):roleData(), stage=$('orbitStage'), ranks=$('orbitRanks');
     const cols=lv?hotPal(hotCat):starColors, short=t=>t.length>8?t.slice(0,8)+'…':t;
     stage.querySelectorAll('.planet-path').forEach(x=>x.remove());
-    $('orbitTitle').childNodes[0].nodeValue=dipperBoard==='hot'?'剧本热点七星 ':'开阳角色七星 ';
-    $('orbitSub').textContent=lv?'点一颗星，带灵感直接开写':dipperBoard==='hot'?'七颗星对应七个剧本主题，星体大小代表热度指数':'开阳精选角色映射到天玑角色原型，点击星体或排行即可查看';
+    $('orbitTitle').childNodes[0].nodeValue=dipperBoard==='hot'?'剧本热点七星 ':'角色七星 ';
+    $('orbitSub').textContent=lv?'点一颗星，带灵感直接开写':dipperBoard==='hot'?'七颗星对应七个剧本主题，星体大小代表热度指数':'精选角色对应天玑角色原型，点击星体或排行即可查看';
     $('orbitRanges').style.visibility=dipperBoard==='hot'&&!lv?'visible':'hidden';
     const top=data[0],topHeat=dipperBoard==='hot'?top[2]:top[3];
     $('orbitCore').innerHTML=lv?`<span><b>${esc(short(top[0]))}</b><strong>1</strong><small>热度第一</small></span>`:`<span><b>${top[0]}</b><strong>${topHeat}</strong><small>热度第一</small></span>`;
