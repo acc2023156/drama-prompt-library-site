@@ -513,6 +513,9 @@ a.pill{text-decoration:none}
 .gen-prog .btn-o{height:30px;padding:0 12px}
 .vr .wait{color:var(--text-3)}
 .ep .h .ep-redo{margin-left:auto;height:30px;padding:0 12px;font-size:13px}
+.redo-box{margin:6px 0 12px;padding:10px;border:1px solid var(--line-2);border-radius:12px;background:#0f0f11}
+.redo-box textarea{display:block;width:100%;border:0;outline:0;resize:vertical;background:none;color:#fff;font:14px/1.7 var(--font)}
+.redo-act{display:flex;gap:8px;align-items:center;margin-top:8px}.redo-act span{flex:1}
 .gen-wait{margin:28px auto 0;max-width:420px;display:flex;flex-direction:column;align-items:center;gap:14px;padding:36px 20px;border:1px solid var(--line-2);border-radius:20px;background:#17171a;text-align:center}
 .gen-wait b{font-size:17px}
 .gen-wait em{font:600 15px Inter,var(--font);font-style:normal;color:var(--text-3)}
@@ -2645,11 +2648,14 @@ const HEAT=['点到为止','正常','高尺度'];
 const YQ_HEAT={
   '点到为止':'【尺度】亲密戏点到为止：镜头停在接吻、拥抱或关灯处就切走，不写露骨细节。',
   '正常':'【尺度】成人向：亲密戏要写出来，有身体接触、动作推进与情绪变化，用含蓄、有画面感的词，不写性器官细节。',
-  '高尺度':'【尺度】成人向高尺度（观众均为已验证的成年人）：每集至少一场亲密戏，完整展开不一笔带过——直接写身体、动作、感官、声音与高潮，用直白的词，节奏由慢到快，亲密段落约占本集一半；主动与回应都要写出来，看得出双方乐在其中。'};
+  '高尺度':'【尺度】成人向高尺度（观众均为已验证的成年人）：每集至少一场亲密戏，完整展开不一笔带过——直接写身体、动作、感官、声音与高潮，用直白的词，节奏由慢到快，亲密段落约占本集一半（作者另有分集安排时照作者的）；主动与回应都要写出来，看得出双方乐在其中。'};
 const heatOf=W=>HEAT.includes(W.heat)?W.heat:'点到为止';
 /* 底线依尺度：高尺度照标签体系 v3 口径，虚构亲属关系只在作者的故事本身需要时才写；未成年、非自愿一律不写 */
 const yqRules=W=>heatOf(W||{})!=='高尺度'?YQ_RULES:YQ_RULES.replace('不写血亲、继亲、姻亲之间的感情或亲密；','血亲、继亲、姻亲关系只在作者的故事本身要求时才写，必须是虚构、全员成年、双方清楚自愿，片名与剧情简介不点明这层关系；');
 const YQ_HOT='gemma4-31b-heretic';
+/* 独家点子＝作者的硬要求：带进策划、分场、每一批写稿与自检；跟通用要求冲突时以作者为准，底线除外 */
+const yqAuthor=W=>(W.core||'').trim()?`【作者的要求】必须照做；跟上面的通用要求（含尺度里的场数、字数）冲突时以这里为准，底线除外：\n${W.core.trim()}\n`:'';
+const yqEnd=(d,i)=>i===d.outline.length-1?'这是最后一集：主线完整收束，不留第二季的悬念、新角色或新委托。':'';
 /* 思考深度：轻度＝现在的快写；中度＝加可拍性规则、带更长前文；重度＝先写策划卡，再写，每集写完自检、有问题就修 */
 const DEPTH=['轻度','中度','重度'];
 const DEPTH_TIME={'轻度':'约 3 分钟','中度':'约 5 分钟','重度':'约 12 分钟'};
@@ -2661,13 +2667,13 @@ function yqCardPrompt(W, n){
   if(W.qxRole) x.push(`核心角色类型：${W.qxRole}`); if(W.qxMode) x.push(`剧本模式：${W.qxMode}`);
   if((W.genreV3||[]).length) x.push(`题材细分：${W.genreV3.join('、')}`);
   if((W.hooks||[]).length) x.push(`剧情标签（要在剧情里兑现）：${W.hooks.join('、')}`); if((W.core||'').trim()) x.push(`作者的点子：${W.core.trim()}`);
-  if((W.title||'').trim()) x.push(`剧名：${W.title.trim()}`);
+  if((W.title||'').trim()) x.push(`剧名：${W.title.trim()}（照用，不要改）`);
   return `你是短剧总策划。为一部 ${n} 集、每集约 ${wzMins(W)||1} 分钟的竖屏短剧写「策划卡」，立项时写死，后面每一集都照它写。
 ${x.join('\n')}
 
 ${yqRules(W)}
 ${YQ_TRAPS}
-
+${yqAuthor(W)}
 只输出一个 JSON，不要任何说明：
 {"title":"剧名（没给就自己取，8 字内）","logline":"一句话梗概",
 "mystery":"贯穿全剧的主线谜底：观众到后段才知道的真相，一两句",
@@ -2723,11 +2729,11 @@ function yqPlanPrompt(W, n, card){
   if(W.qxRole) x.push(`核心角色类型：${W.qxRole}`); if(W.qxMode) x.push(`剧本模式：${W.qxMode}`);
   if((W.genreV3||[]).length) x.push(`题材细分：${W.genreV3.join('、')}`);
   if((W.hooks||[]).length) x.push(`剧情标签（要在剧情里兑现）：${W.hooks.join('、')}`); if((W.core||'').trim()) x.push(`作者的点子：${W.core.trim()}`);
-  if((W.title||'').trim()) x.push(`剧名：${W.title.trim()}`);
-  return `你是短剧总编剧。依下面设定，规划一部 ${n} 集的竖屏短剧，每集约 ${wzMins(W)||1} 分钟。\n${x.join('\n')}\n\n${yqRules(W)}\n${YQ_HEAT[heatOf(W)]}${heatOf(W)==='高尺度'?'每集的 event 都要写到亲密情节如何发生。':''}\n
+  if((W.title||'').trim()) x.push(`剧名：${W.title.trim()}（照用，不要改）`);
+  return `你是短剧总编剧。依下面设定，规划一部 ${n} 集的竖屏短剧，每集约 ${wzMins(W)||1} 分钟。\n${x.join('\n')}\n\n${yqRules(W)}\n${YQ_HEAT[heatOf(W)]}\n${yqAuthor(W)}${heatOf(W)==='高尺度'?'有亲密情节的集，event 要写到它如何发生；哪几集有、哪几集没有，作者有安排就照作者的。':''}\n
 只输出一个 JSON，不要任何说明：
 {"title":"剧名（没给就自己取，8 字内）","logline":"一句话梗概","cast":[{"name":"人名（不要用设定里的形容词当名字）","role":"女主/男主/反派/配角","age":25,"bio":"一句话人设"}],"episodes":[{"title":"集名（6 字内）","event":"本集发生什么，两三句","hook":"集尾钩子，一句"}]}
-cast 3 到 6 人；episodes 正好 ${n} 个，前后连贯，每集都有冲突与钩子，最后一集收尾。${card?`
+cast 3 到 6 人；episodes 正好 ${n} 个，前后连贯，每集都有冲突与钩子，最后一集完整收尾，不留续季钩子。${card?`
 已定的策划卡（照它排，剧名、人名、人设不要改；cast 直接沿用这些人）：
 ${cardText(card)}
 主线谜底要分几集逐步逼近，到后段才揭开。`:''}${depthOf(W)!=='轻度'?`
@@ -2736,8 +2742,8 @@ ${YQ_TRAPS}`:''}`;
 function cardText(c){ if(!c) return ''; const r=c.rules||{};
   return [`主线谜底：${c.mystery||''}`, `权力上限：${r.power||''}`, `利益：${r.stakes||''}`, `空间升级：${r.spaces||''}`, `关键物证：${r.evidence||''}`, `主角能力的限制与代价：${r.limit||''}`, `称谓变化：${r.address||''}`,
     ...(c.cast||[]).map(p=>`${p.name}（${p.role}，${p.age||''}岁）外观：${p.look||''}；欲望：${p.want||''}；弱点：${p.flaw||''}；说话：${p.voice||''}`)].join('\n'); }
-/* 交件格式：每分钟约 800 字（含场头、△动作、字卡），场头「集-场 时段／地点（内外）／出场人物」 */
-const YQ_CPM=800;
+/* 交件格式：每分钟约 400 字（含场头、△动作、字卡），场头「集-场 时段／地点（内外）／出场人物」 */
+const YQ_CPM=400;
 const yqFormat=i=>`格式（只输出剧本，不要标题和说明）：
 ${i+1}-1 夜／地点（内）／人物甲、人物乙
 △ 拍得出来的动作（一行一个动作或镜头）
@@ -2755,17 +2761,19 @@ ${d.outline.map((o,k)=>`第${k+1}集 ${o.title}：${o.event}`).join('\n')}
 ${prev?`上一集结尾：\n${prev}\n`:''}
 本集要写：${ep.event}
 集尾钩子：${ep.hook}
+${yqEnd(d,i)}
 
 ${yqFormat(i)}
 第一次出场要加人名字卡的人：${yqNewNames(d,i).join('、')||'（无）'}
 
-要求：开头 3 秒有钩子，场次 2 到 4 场，台词口语、短而有力，人名与设定一致，不写旁白说明，不用字幕交代剧情；字数尽量贴近约 ${chars} 字。
+要求：开头 3 秒有钩子，场次 2 到 4 场，台词口语、短而有力，人名与设定一致，不写旁白说明，不用字幕交代剧情；全集约 ${chars} 字，不超过 ${Math.round(chars*1.25)} 字。
 ${d.card?`策划卡（必须遵守，人物说话方式照它写）：
 ${cardText(d.card)}
 `:''}${dp!=='轻度'?YQ_SHOOT+'\n'+YQ_TRAPS+'\n':''}${yqRules(W)}
-${YQ_HEAT[heatOf(W)]}`;
+${YQ_HEAT[heatOf(W)]}
+${yqAuthor(W)}`;
 }
-const yqSceneCount=W=>Math.max(3,Math.min(15,Math.round((wzMins(W)||1)*1.5)+1));
+const yqSceneCount=W=>Math.max(3,Math.min(12,Math.round(wzMins(W)||1)+1));
 function yqScenePrompt(d, W, i, n){
   return `你是短剧编剧。为《${d.title}》第 ${i+1} 集（共 ${d.outline.length} 集，本集约 ${wzMins(W)} 分钟）排分场大纲，正好 ${n} 场。
 故事：${d.logline}
@@ -2776,14 +2784,14 @@ ${d.outline.map((o,k)=>`第${k+1}集 ${o.title}：${o.event}`).join('\n')}
 本集要写：${d.outline[i].event}
 集尾钩子：${d.outline[i].hook}
 
-要求：场与场一步步推进，每场有自己的冲突或转折，不重复同一件事；地点 2–5 个、可重复使用；第一场开头 3 秒有钩子，最后一场落在集尾钩子；全集只留一个结尾钩子。
+要求：场与场一步步推进，每场有自己的冲突或转折，不重复同一件事；地点 2–5 个、可重复使用；第一场开头 3 秒有钩子，最后一场落在集尾钩子；全集只留一个结尾钩子。${yqEnd(d,i)}
 ${yqRules(W)}
 ${YQ_HEAT[heatOf(W)]}
-只输出 JSON：{"scenes":[{"time":"日/夜/黄昏/凌晨","place":"地点","io":"内/外","people":["人名"],"card":"需要时间字卡就写（如：次日夜），否则空","beat":"这场发生什么：谁要什么、冲突、转折、结果，两三句"}]}`;
+${yqAuthor(W)}只输出 JSON：{"scenes":[{"time":"日/夜/黄昏/凌晨","place":"地点","io":"内/外","people":["人名"],"card":"需要时间字卡就写（如：次日夜），否则空","beat":"这场发生什么：谁要什么、冲突、转折、结果，两三句"}]}`;
 }
 function yqBatchPrompt(d, W, i, plan, from, to, prevTail){
   const dp=depthOf(W), per=Math.round(wzMins(W)*YQ_CPM/plan.length), sc=plan.slice(from,to);
-  return `你是短剧编剧。写《${d.title}》第 ${i+1} 集的第 ${from+1}–${to} 场（全集共 ${plan.length} 场），每场约 ${per} 字。
+  return `你是短剧编剧。写《${d.title}》第 ${i+1} 集的第 ${from+1}–${to} 场（全集共 ${plan.length} 场），每场约 ${per} 字，不超过 ${Math.round(per*1.25)} 字。
 故事：${d.logline}
 人物：${d.cast.map(c=>`${c.name}（${c.role}）${c.bio}`).join('；')}
 本集要写：${d.outline[i].event}
@@ -2793,9 +2801,10 @@ ${prevTail?`紧接在这段之后：\n${prevTail}\n`:''}
 ${yqFormat(i)}
 场号从 ${i+1}-${from+1} 开始。第一次出场要加人名字卡的人：${yqNewNames(d,i).join('、')||'（无）'}（同一集前面的场已加过就不要重复）。
 
-要求：照分场写满，每场都要有足够的台词来回与人物反应，不要几句就结束；动作行写镜头拍得到的东西；台词口语、短句、人物说话有辨识度；不写旁白说明。${to===plan.length?'最后一场停在集尾钩子上。':'写到第 '+to+' 场结束就停。'}
+要求：照分场写，每场有台词来回与人物反应，篇幅守住字数上限；动作行写镜头拍得到的东西；台词口语、短句、人物说话有辨识度；不写旁白说明。${to===plan.length?(yqEnd(d,i)||'最后一场停在集尾钩子上。'):'写到第 '+to+' 场结束就停。'}
 ${d.card?`策划卡（必须遵守）：\n${cardText(d.card)}\n`:''}${dp!=='轻度'?YQ_SHOOT+'\n'+YQ_TRAPS+'\n':''}${yqRules(W)}
-${YQ_HEAT[heatOf(W)]}`;
+${YQ_HEAT[heatOf(W)]}
+${yqAuthor(W)}`;
 }
 /* 写一集：短集一次写完；3 分钟以上先排分场，再分批（每批 3 场）同时写 */
 async function yqWriteEpisode(d, W, i, hooks){
@@ -2833,6 +2842,7 @@ function yqCheckPrompt(d, W, i, txt){
 ${cardText(d.card)}
 本集要写：${d.outline[i].event}
 上一集结尾：${(d.eps[i-1]||'').slice(-400)}
+${yqAuthor(W)?'另查：有没有违反作者的要求（本集相关的部分）。\n'+yqAuthor(W):''}
 
 剧本：
 ${txt}
@@ -2850,11 +2860,25 @@ ${txt}
 ${yqRules(W)}
 ${YQ_HEAT[heatOf(W)]}`;
 }
+function yqNotePrompt(d, W, i, txt, note){
+  return `按修改意见改写《${d.title}》第 ${i+1} 集剧本。意见没提到的地方尽量保留原样，格式照原样，只输出改好的完整剧本。
+修改意见：
+${note}
+
+本集要写：${d.outline[i].event}
+${d.card?`策划卡：\n${cardText(d.card)}\n`:''}${yqAuthor(W)}
+原剧本：
+${txt}
+
+${yqRules(W)}
+${YQ_HEAT[heatOf(W)]}`;
+}
+const REDO_BUSY=new Set();
 const parseJSON=t=>{ const a=t.indexOf('{'), b=t.lastIndexOf('}'); return JSON.parse(t.slice(a,b+1)); };
 const yqRun={};
 function yqRefresh(wid){
   const m=location.hash.match(/^#\/script\/v\/([^/]+)\/?(\w+)?/); if(!m||m[1]!==wid) return;
-  const y=scrollY; viewVibeScript(wid, m[2]); scrollTo(0,y);
+  const y=scrollY; try{ viewVibeScript(wid, m[2]); }catch(e){ console.warn('refresh', e); } scrollTo(0,y);
 }
 async function yqDrive(wid){
   if(yqRun[wid]) return; yqRun[wid]=1;
@@ -3061,7 +3085,34 @@ function viewVibeScript(id, tab){
       $('vtBody').querySelectorAll('[data-sc]').forEach(b=>b.onclick=()=>{ tab='script'; draw(); document.getElementById('ep'+b.dataset.sc)?.scrollIntoView({behavior:'smooth',block:'start'}); });
     } else if(tab==='script'){
       $('vtBody').innerHTML=`<div class="scr">${eps.map((x,i)=>`<div class="ep" id="ep${i}"><div class="h"><b>EP${String(i+1).padStart(2,'0')}</b><span>${esc(s.outline[i][0])}</span>${s.real&&s.written[i]&&w.gen.status!=='writing'?`<button class="btn-o ep-redo" data-redo="${i}">${ico('dice')}重写</button>`:''}</div><pre>${sxHL(epTxt(i))}</pre></div>`).join('')}</div>`;
-      $('vtBody').querySelectorAll('[data-redo]').forEach(b=>b.onclick=()=>{ const k=+b.dataset.redo, d=w.gen.data; d.eps[k]=null; updateGen(w.id,{data:d, status:'writing', err:null}); viewVibeScript(w.id,'script'); });
+      $('vtBody').querySelectorAll('[data-redo]').forEach(b=>b.onclick=()=>{
+        const k=+b.dataset.redo, box=b.closest('.ep'); if(box.querySelector('.redo-box')) return;
+        const Wx=Object.assign({},WZ_DEF,w.W), d=w.gen.data, writer=heatOf(Wx)==='高尺度'?YQ_HOT:YQ_WRITE;
+        box.querySelector('.h').insertAdjacentHTML('afterend',`<div class="redo-box"><textarea rows="3" placeholder="要改哪里？留空就整集重写"></textarea>
+          <div class="redo-act"><button class="ui-btn ghost" data-r="find">${ico('sparkle')}AI 挑问题</button><span></span><button class="ui-btn ghost" data-r="x">取消</button><button class="ui-btn primary" data-r="go">${ico('dice')}重写</button></div></div>`);
+        const rb=box.querySelector('.redo-box'), ta=rb.querySelector('textarea'), btns=rb.querySelectorAll('button');
+        const busy=(on,lbl)=>{ btns.forEach(x=>x.disabled=on); if(lbl) rb.querySelector('[data-r="go"]').innerHTML=lbl; };
+        ta.focus();
+        rb.querySelector('[data-r="x"]').onclick=()=>rb.remove();
+        rb.querySelector('[data-r="find"]').onclick=async e=>{
+          if(!authGet()){ openLogin(); return; } const fb=e.currentTarget, old=fb.innerHTML; busy(true); fb.innerHTML='<span class="gw-spin"></span>正在挑…';
+          try{ const iss=(parseJSON(await yqChat(YQ_PLAN, yqCheckPrompt(d, Wx, k, d.eps[k]), 1500)).issues||[]).filter(x=>x&&x.problem);
+            ta.value=iss.length?iss.map((x,n)=>`${n+1}. ${x.where||''}：${x.problem}${x.fix?' → '+x.fix:''}`).join('\n'):''; if(!iss.length) toast('没挑到要改的问题'); }
+          catch(err){ toast(/登录|积分/.test(err.message)?err.message:'没挑成功，再试一次'); }
+          busy(false); fb.innerHTML=old; };
+        rb.querySelector('[data-r="go"]').onclick=async()=>{
+          const note=ta.value.trim();
+          if(!note){ d.eps[k]=null; updateGen(w.id,{data:d, status:'writing', err:null}); viewVibeScript(w.id,'script'); return; }
+          if(!authGet()){ openLogin(); return; }
+          busy(true,'<span class="gw-spin"></span>正在改…'); REDO_BUSY.add(w.id);
+          try{ const old=d.eps[k], mx=heatOf(Wx)==='点到为止'?5000:6000, fx=await yqChat(writer, yqNotePrompt(d, Wx, k, old, note), mx);
+            if(!fx||fx.length<old.length*.5) throw new Error('改写不完整');
+            const cur=(store('works')||[]).find(x=>x.id===w.id); if(!cur||!cur.gen||!cur.gen.data) throw new Error('作品已不在');
+            cur.gen.data.eps[k]=fx; updateGen(w.id,{data:cur.gen.data}); toast(`第 ${k+1} 集已照意见改好`);
+            REDO_BUSY.delete(w.id); if(location.hash.includes(w.id)) viewVibeScript(w.id,'script'); document.getElementById('ep'+k)?.scrollIntoView({block:'start'}); return; }
+          catch(err){ toast(/登录|积分/.test(err.message)?err.message:'没改成功，再试一次'); }
+          REDO_BUSY.delete(w.id); busy(false,`${ico('dice')}重写`); };
+      });
     } else if(tab==='listing'){
       const d=w.gen&&w.gen.data, L=w.listing, busy=LST_BUSY.has(w.id);
       const chip=(t,cls)=>`<span class="ui-tag ${cls||''}">${esc(t)}</span>`;
@@ -3273,7 +3324,7 @@ function drawNav(route){
   const T = (t, icon) => `<div class="ps-title">${icon?ico(icon):''}${esc(t)}</div>`;
   const PICK = `<div class="ps-hr"></div>` + T('精选提示词','grid');
   const F = FUNCS.find(f=>f.k===fn);
-  const title = fn==='prompts' ? (ch ? ch.label : '目录') : (route.view==='start'||route.view==='partner') ? '目录' : F.label+'目录';
+  const title = fn==='prompts' ? (ch ? ch.label : '目录') : (route.view==='start'||route.view==='partner') ? '目录' : (F?F.label:'')+'目录';
   const pill = `${esc(title)} ${ico('panel')}`;
   let h = `<div class="ps-row"><button class="pill" id="psClose" title="收起">${pill}</button></div>`;
   if(route.vibe){ const V=route.vibe;
